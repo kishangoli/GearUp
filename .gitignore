@@ -1,0 +1,16 @@
+node_modules
+.minis-cache
+*.tsbuildinfo
+.env
+# Node
+dist
+.cache
+.env.*
+npm-debug.log*
+yarn-error.log
+pnpm-debug.log
+
+# macOS
+.DS_Store
+
+
