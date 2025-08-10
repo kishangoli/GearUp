@@ -1,5 +1,6 @@
 import React from "react";
 import { useProductSearch, ProductCard } from "@shopify/shop-minis-react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserAnswers } from "../context/UserAnswersContext";
 import { generatePromptBlurbsClient } from "../lib/fal";
@@ -58,6 +59,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
   }, [promptsKey, answers]);
 
   return (
+
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pb-20">
       {/* GLOBAL TOAST (top-center) */}
       <AnimatePresence>
@@ -81,23 +83,24 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
       <div className="pt-12 px-4 pb-6 flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+          className="flex items-center text-white/80 hover:text-white transition-colors"
         >
           <span className="text-lg mr-1">←</span>
           <span className="text-sm">Back</span>
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">Your Recommendations</h1>
+        <h1 className="text-2xl font-bold text-white">Your Recommendations</h1>
         <div className="w-10" />
       </div>
 
-      <div className="px-4 pb-10 space-y-6">
-        {loading && <SkeletonSection />}
+        <div className="px-4 pb-10 space-y-6">
+          {loading && <SkeletonSection />}
 
-        {!loading && plan && plan.prompts.length === 0 && (
-          <div className="bg-white rounded-2xl p-6 shadow-lg text-gray-700">
-            No prompts yet. Try adjusting your answers.
-          </div>
-        )}
+          {!loading && plan && plan.prompts.length === 0 && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-white/80">
+              No prompts yet. Try adjusting your answers.
+            </div>
+          )}
+
 
         {!loading &&
           plan?.prompts.map((p, idx) => (
@@ -179,6 +182,7 @@ const PromptRow: React.FC<{
 
   return (
     <section className="bg-white rounded-2xl p-6 shadow-lg">
+
       <h2 className="text-lg font-semibold text-gray-800">{prompt.label}</h2>
 
       {blurb === "__loading__" ? (
@@ -200,6 +204,7 @@ const PromptRow: React.FC<{
       )}
 
       {!isLoading && !error && (
+
         <motion.div
           layout
           className="grid grid-cols-2 gap-3"
@@ -245,16 +250,33 @@ const PromptRow: React.FC<{
 /* ----------------------------- Skeletons ----------------------------- */
 
 const SkeletonSection = () => (
-  <div className="bg-white rounded-2xl p-6 shadow-lg">
-    <div className="animate-pulse h-5 w-40 bg-gray-200 rounded mb-4" />
+  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+    <div className="animate-pulse h-5 w-40 bg-white/20 rounded mb-4" />
     <SkeletonGrid />
   </div>
 );
 
 const SkeletonGrid = () => (
-  <div className="grid grid-cols-2 gap-3">
+  <Swiper
+    effect={'coverflow'}
+    grabCursor={true}
+    centeredSlides={true}
+    slidesPerView={'auto'}
+    spaceBetween={30}
+    coverflowEffect={{
+      rotate: 50,
+      stretch: 0,
+      depth: 100,
+      modifier: 1,
+      slideShadows: true,
+    }}
+    modules={[EffectCoverflow]}
+    className="product-swiper"
+  >
     {Array.from({ length: 6 }).map((_, i) => (
-      <div key={i} className="h-44 rounded-xl bg-white/60 border border-gray-200 animate-pulse" />
+      <SwiperSlide key={i}>
+        <div className="w-[280px] h-[320px] rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 animate-pulse" />
+      </SwiperSlide>
     ))}
-  </div>
+  </Swiper>
 );
