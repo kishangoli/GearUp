@@ -227,7 +227,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         }
         
         .animated-bg {
-          background: linear-gradient(-45deg, #242331, #284B63, #242331, #284B63);
+          background: linear-gradient(-45deg, #242331, #1d4865ff, #242331, #1c4661ff);
           background-size: 400% 400%;
           animation: gradientShift 15s ease infinite;
         }

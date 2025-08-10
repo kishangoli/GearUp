@@ -220,7 +220,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         }
         
         .animated-bg {
-          background: linear-gradient(-45deg, #242331, #284B63, #242331, #284B63);
+          background: linear-gradient(-45deg, #242331, #1d4763ff, #242331, #18415dff);
           background-size: 400% 400%;
           animation: gradientShift 15s ease infinite;
         }
@@ -386,30 +386,19 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         </div>
 
         {/* Header with Progress */}
-        <div className="pt-12 px-4 pb-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="pt-6 px-4 pb-6">
+          <div className="flex items-center justify-between mb-6">
             <button
               onClick={handleBack}
-              className="flex items-center text-gray-300 hover:text-white transition-all duration-300 transform touch-feedback px-3 py-2 rounded-lg glass-morphism"
+              className="flex items-center justify-center w-10 h-10 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200"
             >
-              <span className="text-lg mr-1">←</span>
-              <span className="text-sm">Back</span>
+              <span className="text-xl">←</span>
             </button>
-            <div className="flex-1 mx-4">
-              <div className="h-2 bg-gray-800/80 backdrop-blur-sm border border-white/10 rounded-full p-1">
-                <div 
-                  className="bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 h-full rounded-full transition-all duration-300 glow-effect"
-                  style={{ width: `${getProgress()}%` }}
-                />
-              </div>
-            </div>
-            <div className="text-sm text-gray-300">
-              {currentGoalIndex + 1} of {totalGoals}
-            </div>
+            <div className="w-10" />
           </div>
 
           {/* Goal Header */}
-          <div className="text-center mb-8">
+          <div className="text-center">
             <div className="text-4xl mb-3 floating-element">{currentGoalQuestions.icon}</div>
             <h1 className="text-2xl font-bold text-white mb-2 slide-in-up">
               {currentGoalQuestions.title}
