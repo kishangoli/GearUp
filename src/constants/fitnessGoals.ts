@@ -21,9 +21,9 @@ export const FITNESS_GOALS: GoalConfig[] = [
   },
   {
     id: 'running',
-    label: 'Running/Endurance',
-    description: 'Improve stamina and speed',
-    icon: '🏃'
+    label: 'Sports',
+    description: 'Athletic performance and training',
+    icon: '⚽'
   }
 ];
 

@@ -20,6 +20,7 @@
     "@shopify/shop-minis-react": "0.0.30",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
+    "lottie-react": "^2.4.1",
     "motion": "^12.23.12",
     "ogl": "^1.0.11",
     "react": "18.2.0",
