@@ -23,7 +23,6 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
     updateAnswer,
     goToNextGoal,
     goToPreviousGoal,
-    canProceedToNext,
     canFinish,
     getProgress
   } = useFollowUpQuestions(selectedGoals);
@@ -31,8 +30,19 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
   // NEW: hook into global store
   const { updateFollowUps } = useUserAnswers();
 
+  const [showValidationErrors, setShowValidationErrors] = React.useState(false);
+
   const currentGoalQuestions = FOLLOW_UP_QUESTIONS.find(q => q.goalId === currentGoal);
   const currentGoalAnswers = answers[currentGoal] || {};
+
+  // Helper function to check if a question is answered
+  const isQuestionAnswered = (questionId: string) => {
+    const answer = currentGoalAnswers[questionId];
+    if (typeof answer === 'string') {
+      return answer.trim() !== '';
+    }
+    return !!answer;
+  };
 
   // Scroll to top when currentGoal changes
   React.useEffect(() => {
@@ -53,9 +63,49 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
   };
 
   const handleNext = () => {
+    // Check if all required questions are answered
+    const unansweredQuestions: string[] = [];
+    
+    // Check main questions
+    if (currentGoalQuestions) {
+      for (const question of currentGoalQuestions.questions) {
+        if (question.required && !isQuestionAnswered(question.id)) {
+          unansweredQuestions.push(question.id);
+        }
+      }
+    }
+    
+    // Check conditional allergies question
+    if (currentGoal === 'dietary' && currentGoalAnswers['dietary_preference'] === 'Allergies') {
+      if (DIETARY_ALLERGIES_QUESTION.required && !isQuestionAnswered(DIETARY_ALLERGIES_QUESTION.id)) {
+        unansweredQuestions.push(DIETARY_ALLERGIES_QUESTION.id);
+      }
+    }
+    
+    if (unansweredQuestions.length > 0) {
+      // Show validation errors and scroll to first unanswered question
+      setShowValidationErrors(true);
+      
+      // Find and scroll to the first unanswered question
+      setTimeout(() => {
+        const firstUnansweredElement = document.querySelector(
+          `[data-question-id="${unansweredQuestions[0]}"]`
+        );
+        if (firstUnansweredElement) {
+          firstUnansweredElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }
+      }, 100);
+      
+      return; // Don't proceed
+    }
+    
     if (canFinish()) {
       onComplete(answers); // We'll read full answers from context on the next page.
     } else {
+      setShowValidationErrors(false); // Reset validation errors on successful proceed
       goToNextGoal();
     }
   };
@@ -131,17 +181,27 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
     if (currentGoalQuestions?.goalId === 'dietary') {
       const dietaryPreference = currentGoalAnswers['dietary_preference'];
       if (dietaryPreference === 'Allergies') {
+        const isAnswered = isQuestionAnswered(DIETARY_ALLERGIES_QUESTION.id);
+        const showWarning = DIETARY_ALLERGIES_QUESTION.required && !isAnswered && showValidationErrors;
+        
         return (
-          <div className="question-card rounded-2xl p-6 mt-6 fade-in-stagger" style={{ animationDelay: '0.4s' }}>
+          <div 
+            data-question-id={DIETARY_ALLERGIES_QUESTION.id}
+            className={`question-card rounded-2xl p-6 mt-6 fade-in-stagger ${showWarning ? 'border-red-400/50 bg-red-500/5' : ''}`} 
+            style={{ animationDelay: '0.4s' }}
+          >
             <div className="flex items-center mb-4">
               <span className="text-2xl mr-3">{DIETARY_ALLERGIES_QUESTION.icon}</span>
               <h3 className="text-lg font-semibold text-white">
                 {DIETARY_ALLERGIES_QUESTION.question}
               </h3>
-              {DIETARY_ALLERGIES_QUESTION.required && (
-                <span className="ml-2 text-red-400 text-sm">*</span>
-              )}
             </div>
+            {showWarning && (
+              <div className="mb-3 text-sm text-red-400 flex items-center">
+                <span className="mr-1">*</span>
+                This field is required
+              </div>
+            )}
             {renderQuestion(DIETARY_ALLERGIES_QUESTION)}
           </div>
         );
@@ -424,20 +484,33 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         {/* Questions Section */}
         <div className="px-4 mb-8">
           <div className="space-y-8">
-            {currentGoalQuestions.questions.map((question, index) => (
-              <div key={question.id} className="question-card rounded-2xl p-6 fade-in-stagger" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="flex items-center mb-4">
-                  <span className="text-2xl mr-3">{question.icon}</span>
-                  <h3 className="text-lg font-semibold text-white">
-                    {question.question}
-                  </h3>
-                  {question.required && (
-                    <span className="ml-2 text-red-400 text-sm">*</span>
+            {currentGoalQuestions.questions.map((question, index) => {
+              const isAnswered = isQuestionAnswered(question.id);
+              const showWarning = question.required && !isAnswered && showValidationErrors;
+              
+              return (
+                <div 
+                  key={question.id} 
+                  data-question-id={question.id}
+                  className={`question-card rounded-2xl p-6 fade-in-stagger ${showWarning ? 'border-red-400/50 bg-red-500/5' : ''}`} 
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="flex items-center mb-4">
+                    <span className="text-2xl mr-3">{question.icon}</span>
+                    <h3 className="text-lg font-semibold text-white">
+                      {question.question}
+                    </h3>
+                  </div>
+                  {showWarning && (
+                    <div className="mb-3 text-sm text-red-400 flex items-center">
+                      <span className="mr-1">*</span>
+                      This field is required
+                    </div>
                   )}
+                  {renderQuestion(question)}
                 </div>
-                {renderQuestion(question)}
-              </div>
-            ))}
+              );
+            })}
             {renderConditionalAllergiesQuestion()}
           </div>
         </div>
@@ -445,24 +518,11 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         {/* Navigation */}
         <div className="px-4 pb-8">
           <div className="flex gap-3">
-            {currentGoalIndex > 0 && (
-              <button
-                onClick={goToPreviousGoal}
-                className="flex-1 py-4 px-6 glass-morphism text-gray-300 rounded-xl font-semibold hover:text-white transition-all duration-300 touch-feedback"
-              >
-                Previous
-              </button>
-            )}
             <button
               onClick={handleNext}
-              disabled={!canProceedToNext(currentGoal)}
-              className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 touch-feedback ${
-                canProceedToNext(currentGoal)
-                  ? 'glass-morphism-selected text-white glow-effect hover:brightness-110'
-                  : 'glass-morphism text-gray-500 cursor-not-allowed opacity-50'
-              }`}
+              className="w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 touch-feedback glass-morphism-selected text-white glow-effect hover:brightness-110"
             >
-              {canFinish() ? 'Get Recommendations' : 'Next'}
+              {totalGoals === 1 || canFinish() ? 'Get Recommendations' : 'Next'}
             </button>
           </div>
         </div>

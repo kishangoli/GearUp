@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { FollowUpAnswers, GoalFollowUpData } from '../types/followUpQuestions';
 import { FitnessGoal } from '../types/fitness';
-import { FOLLOW_UP_QUESTIONS } from '../constants/followUpQuestions';
+import { FOLLOW_UP_QUESTIONS, DIETARY_ALLERGIES_QUESTION } from '../constants/followUpQuestions';
 
 export const useFollowUpQuestions = (selectedGoals: FitnessGoal[]) => {
   const [answers, setAnswers] = useState<GoalFollowUpData>({});
@@ -33,9 +33,25 @@ export const useFollowUpQuestions = (selectedGoals: FitnessGoal[]) => {
 
   const canProceedToNext = useCallback((goalId: string) => {
     const goalAnswers = answers[goalId] || {};
+    const goalQuestions = FOLLOW_UP_QUESTIONS.find(q => q.goalId === goalId);
+    
+    if (!goalQuestions) return false;
+    
     // Check if all required questions for this goal are answered
-    // This will be implemented when we integrate with the questions data
-    return Object.keys(goalAnswers).length > 0;
+    for (const question of goalQuestions.questions) {
+      if (question.required && !goalAnswers[question.id]) {
+        return false;
+      }
+    }
+    
+    // Special case for dietary goal - check allergies question if needed
+    if (goalId === 'dietary' && goalAnswers['dietary_preference'] === 'Allergies') {
+      if (!goalAnswers[DIETARY_ALLERGIES_QUESTION.id] || goalAnswers[DIETARY_ALLERGIES_QUESTION.id].toString().trim() === '') {
+        return false;
+      }
+    }
+    
+    return true;
   }, [answers]);
 
   const canFinish = useCallback(() => {
@@ -50,20 +66,25 @@ export const useFollowUpQuestions = (selectedGoals: FitnessGoal[]) => {
     selectedGoals.forEach(goalId => {
       const goalQuestions = FOLLOW_UP_QUESTIONS.find(q => q.goalId === goalId);
       if (goalQuestions) {
+        const goalAnswers = answers[goalId] || {};
+        
         // Count main questions
-        totalQuestions += goalQuestions.questions.length;
+        goalQuestions.questions.forEach(question => {
+          if (question.required) {
+            totalQuestions += 1;
+            if (goalAnswers[question.id]) {
+              answeredQuestions += 1;
+            }
+          }
+        });
         
         // Count conditional dietary allergies question if applicable
-        if (goalId === 'dietary') {
-          const goalAnswers = answers[goalId] || {};
-          if (goalAnswers['dietary_preference'] === 'Allergies') {
-            totalQuestions += 1; // Add the allergies question
+        if (goalId === 'dietary' && goalAnswers['dietary_preference'] === 'Allergies') {
+          totalQuestions += 1; // Add the allergies question
+          if (goalAnswers[DIETARY_ALLERGIES_QUESTION.id] && goalAnswers[DIETARY_ALLERGIES_QUESTION.id].toString().trim() !== '') {
+            answeredQuestions += 1;
           }
         }
-        
-        // Count answered questions for this goal
-        const goalAnswers = answers[goalId] || {};
-        answeredQuestions += Object.keys(goalAnswers).length;
       }
     });
     

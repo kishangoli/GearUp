@@ -447,10 +447,9 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
           <div className="flex items-center justify-between mb-1">
             <button
               onClick={onBack}
-              className="flex items-center text-gray-300 hover:text-white transition-all duration-300 transform touch-feedback px-3 py-2 rounded-lg glass-morphism"
+              className="flex items-center justify-center w-10 h-10 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200"
             >
-              <span className="text-lg mr-1">←</span>
-              <span className="text-sm">Back</span>
+              <span className="text-xl">←</span>
             </button>
             <div className="flex-1"></div>
           </div>

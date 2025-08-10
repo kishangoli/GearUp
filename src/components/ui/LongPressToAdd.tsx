@@ -34,7 +34,7 @@ export default function LongPressToAdd({ product, children, onAdded }: Props) {
     add(product);
     onAdded?.();
 
-    // suppress the “click after press” for a moment
+    // suppress the "click after press" for a moment
     suppressClickRef.current = true;
     setTimeout(() => { suppressClickRef.current = false; }, 600);
 
@@ -69,13 +69,6 @@ export default function LongPressToAdd({ product, children, onAdded }: Props) {
     >
       <div className={popping ? "animate__animated animate__faster animate__heartBeat" : ""}>
         {children}
-      </div>
-
-      {/* hint */}
-      <div className="pointer-events-none absolute inset-x-0 -top-3 flex justify-center">
-        <div className="text-[10px] text-gray-500 bg-white/80 backdrop-blur px-2 py-0.5 rounded-full shadow">
-          Press & hold to add
-        </div>
       </div>
     </div>
   );

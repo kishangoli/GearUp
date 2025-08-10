@@ -2,6 +2,7 @@ import React from "react";
 import { useProductSearch, ProductCard } from "@shopify/shop-minis-react";
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
+import { useLongPress } from "use-long-press";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserAnswers } from "../context/UserAnswersContext";
@@ -23,7 +24,6 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
   onBack,
   plan,
   loading,
-  footerCta,
   onViewVisionBoard,
 }) => {
   const { items } = useVisionBoard();
@@ -46,7 +46,32 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
   }, []);
 
   // ---------- price filter ----------
-  const [priceRange, setPriceRange] = React.useState({ min: 0, max: 500 });
+  const [priceRange, setPriceRange] = React.useState({ min: 0, max: 1000 });
+  const [isPriceFilterExpanded, setIsPriceFilterExpanded] = React.useState(false);
+
+  // ---------- easter egg ----------
+  const [showNumberSpam, setShowNumberSpam] = React.useState(false);
+  const [numbers, setNumbers] = React.useState<Array<{ id: number; x: number; y: number; number: string }>>([]);
+
+  const triggerNumberSpam = React.useCallback(() => {
+    setShowNumberSpam(true);
+    
+    // Generate 50 random 6s and 7s at random positions
+    const newNumbers = Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      number: Math.random() > 0.5 ? '6' : '7'
+    }));
+    
+    setNumbers(newNumbers);
+    
+    // Clear after 3 seconds
+    setTimeout(() => {
+      setShowNumberSpam(false);
+      setNumbers([]);
+    }, 3000);
+  }, []);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -111,7 +136,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           color: white !important;
         }
         
-        /* Custom Range Slider Styles - Updated for modern dual range */
+        /* Modern Range Slider Styles */
         .slider {
           -webkit-appearance: none;
           appearance: none;
@@ -122,48 +147,185 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         
         .slider::-webkit-slider-track {
           background: transparent;
-          height: 4px;
+          height: 12px;
         }
         
         .slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          background: white;
-          height: 16px;
-          width: 16px;
+          background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+          height: 24px;
+          width: 24px;
           border-radius: 50%;
           cursor: pointer;
           border: 2px solid #3b82f6;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4), 0 0 0 0 rgba(59, 130, 246, 0.7);
           pointer-events: auto;
           position: relative;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+          transform: scale(1.1);
+          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6), 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+        
+        .slider::-webkit-slider-thumb:active {
+          transform: scale(1.05);
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.8), 0 0 0 8px rgba(59, 130, 246, 0.1);
         }
         
         .slider::-moz-range-track {
           background: transparent;
-          height: 4px;
+          height: 12px;
           border: none;
         }
         
         .slider::-moz-range-thumb {
-          background: white;
-          height: 16px;
-          width: 16px;
+          background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+          height: 24px;
+          width: 24px;
           border-radius: 50%;
           cursor: pointer;
           border: 2px solid #3b82f6;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
           pointer-events: auto;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .slider::-moz-range-thumb:hover {
+          transform: scale(1.1);
+          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
         }
         
         /* Focus states for accessibility */
         .slider:focus::-webkit-slider-thumb {
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+          outline: none;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4), 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
         
         .slider:focus::-moz-range-thumb {
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+          outline: none;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4), 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
+
+        /* Fix image distortion in product cards */
+        .shopify-product-card img,
+        .shopify-product-card picture img,
+        .embla__slide img,
+        [class*="product-card"] img,
+        [class*="ProductCard"] img,
+        [data-testid*="product"] img {
+          object-fit: cover !important;
+          object-position: center !important;
+          width: 100% !important;
+          height: auto !important;
+          aspect-ratio: 1 / 1 !important;
+          border-radius: 8px !important;
+          overflow: hidden !important;
+        }
+
+        /* Ensure product card containers maintain proper aspect ratio */
+        .shopify-product-card,
+        .embla__slide > div,
+        [class*="product-card"],
+        [class*="ProductCard"] {
+          aspect-ratio: auto !important;
+          height: auto !important;
+          min-height: 200px !important;
+          max-height: 280px !important;
+          overflow: hidden !important;
+          border-radius: 12px !important;
+        }
+
+        /* Fix image containers within product cards */
+        .shopify-product-card > div:first-child,
+        .shopify-product-card picture,
+        .shopify-product-card figure,
+        [class*="product-card"] > div:first-child,
+        [class*="ProductCard"] > div:first-child {
+          aspect-ratio: 1 / 1 !important;
+          overflow: hidden !important;
+          border-radius: 8px !important;
+          background: #f8fafc !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        
+        /* Easter egg number spam animation */
+        @keyframes numberFloat {
+          0% {
+            opacity: 1;
+            transform: translateY(0px) rotate(0deg) scale(1);
+          }
+          50% {
+            opacity: 0.8;
+            transform: translateY(-100px) rotate(180deg) scale(1.2);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-200px) rotate(360deg) scale(0.8);
+          }
+        }
+        
+        .number-spam {
+          animation: numberFloat 3s ease-out forwards;
+          pointer-events: none;
+          position: fixed;
+          z-index: 9999;
+          font-size: 2rem;
+          font-weight: bold;
+          color: #3b82f6;
+          text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Performance optimizations for smooth animations */
+        * {
+          will-change: auto;
+        }
+        
+        .price-filter-container {
+          contain: layout style paint;
+        }
+        
+        /* Optimize motion elements for better performance */
+        [data-framer-motion] {
+          transform-style: preserve-3d;
+          backface-visibility: hidden;
+          perspective: 1000px;
+        }
+
+        /* Enhanced Embla Carousel Spacing */
+        .embla {
+          overflow: hidden;
+        }
+        
+        .embla__container {
+          display: flex;
+          margin-left: -12px; /* Offset for consistent spacing */
+        }
+        
+        .embla__slide {
+          flex: 0 0 auto;
+          padding-left: 12px; /* Consistent 12px spacing between slides */
+          min-width: 160px; /* Minimum width to prevent squishing */
+          max-width: calc(50% - 6px); /* Maximum 50% width minus half the gap */
+        }
+        
+        /* Ensure product cards don't overflow their containers */
+        .embla__slide > * {
+          width: 100%;
+          height: 100%;
+          box-sizing: border-box;
+        }
+        
+        /* Prevent layout shifts during animations */
+        .embla__slide [data-framer-motion] {
+          width: 100%;
+          display: block;
+        }
+          
       `}</style>
 
       <div className="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 pb-20">
@@ -186,6 +348,25 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         )}
         </AnimatePresence>
 
+      {/* Easter Egg Number Spam */}
+      {showNumberSpam && (
+        <div className="fixed inset-0 pointer-events-none z-[9999]">
+          {numbers.map((num) => (
+            <div
+              key={num.id}
+              className="number-spam"
+              style={{
+                left: `${num.x}px`,
+                top: `${num.y}px`,
+                animationDelay: `${Math.random() * 0.5}s`
+              }}
+            >
+              {num.number}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="pt-12 px-4 pb-6 flex items-center justify-between">
         <button
           onClick={onBack}
@@ -197,113 +378,310 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         <div className="w-10" /> {/* Spacer for center alignment */}
       </div>
 
-      {/* Integrated Price Filter */}
-      <div className="px-4 pb-6">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-gray-300">Price Range</span>
-          <span className="text-sm text-gray-400">${priceRange.min} - ${priceRange.max}</span>
-        </div>
-        
-        {/* Dual Range Slider Container */}
-        <div className="relative">
-          <div className="flex gap-4 items-center">
-            {/* Min/Max Input Fields */}
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <span>$</span>
-              <input
-                type="number"
-                value={priceRange.min}
-                onChange={(e) => setPriceRange(prev => ({ ...prev, min: Math.max(0, parseInt(e.target.value) || 0) }))}
-                className="w-16 bg-transparent border-b border-gray-600 text-white text-center focus:border-blue-400 focus:outline-none"
-                min="0"
-                max="1000"
-              />
-            </div>
-            
-            {/* Range Slider */}
-            <div className="flex-1 relative">
-              <input
-                type="range"
-                min="0"
-                max="1000"
-                step="10"
-                value={priceRange.min}
-                onChange={(e) => setPriceRange(prev => ({ 
-                  ...prev, 
-                  min: Math.min(parseInt(e.target.value), prev.max - 10) 
-                }))}
-                className="absolute w-full h-1 bg-transparent appearance-none cursor-pointer slider z-10"
-              />
-              <input
-                type="range"
-                min="0"
-                max="1000"
-                step="10"
-                value={priceRange.max}
-                onChange={(e) => setPriceRange(prev => ({ 
-                  ...prev, 
-                  max: Math.max(parseInt(e.target.value), prev.min + 10) 
-                }))}
-                className="absolute w-full h-1 bg-transparent appearance-none cursor-pointer slider z-20"
-              />
-              <div className="relative h-1 bg-gray-600 rounded-full">
+      {/* Combined Price Filter and Quick Tip Row */}
+      <div className="px-4 pb-6 space-y-4 price-filter-container">
+        {/* Price Filter */}
+        <div className="w-full">
+          {/* Collapsed State - Side by side with Quick Tip */}
+          {!isPriceFilterExpanded ? (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="flex gap-3"
+              >
+              {/* Price Filter Button - Left Side */}
+              <div className="flex-1">
+                <motion.button
+                  onClick={() => setIsPriceFilterExpanded(true)}
+                  className="w-full bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10 shadow-lg hover:bg-white/10 transition-all duration-300 group h-[72px] flex items-center"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <span className="text-lg shrink-0">💰</span>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-sm font-medium text-white">Price Range</span>
+                        <span className="text-xs font-mono text-gray-400 truncate">
+                          ${priceRange.min.toLocaleString()} - ${priceRange.max.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                    <motion.span 
+                      className="text-gray-400 group-hover:text-white transition-colors shrink-0"
+                      animate={{ rotate: isPriceFilterExpanded ? 180 : 0 }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                    >
+                      ▼
+                    </motion.span>
+                  </div>
+                </motion.button>
+              </div>
+
+              {/* Quick Tip - Right Side (when collapsed) */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="flex-1"
+              >
                 <div 
-                  className="absolute h-full bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"
-                  style={{
-                    left: `${(priceRange.min / 1000) * 100}%`,
-                    width: `${((priceRange.max - priceRange.min) / 1000) * 100}%`
-                  }}
-                />
+                  {...useLongPress(triggerNumberSpam, {
+                    threshold: 500,
+                    cancelOnMovement: 15,
+                  })()}
+                  className="bg-blue-500/10 backdrop-blur-sm rounded-xl p-4 border border-blue-400/20 cursor-pointer select-none h-[72px] flex items-center"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">💡</span>
+                    <div>
+                      <p className="text-sm font-medium text-blue-200">Quick Tip</p>
+                      <p className="text-xs text-blue-300/80">Long press to add to your gear. </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+            </AnimatePresence>
+          ) : (
+            /* Expanded State - Full width */
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ 
+                  duration: 0.4, 
+                  ease: "easeInOut"
+                }}
+                className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+              >
+                <div className="p-6">
+                  {/* Header with close button */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">💰</span>
+                      <h3 className="text-base font-semibold text-white">Price Range</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <motion.div 
+                        key={`${priceRange.min}-${priceRange.max}`}
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.2 }}
+                        className="px-3 py-1.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg border border-blue-400/30"
+                      >
+                        <span className="text-xs font-mono text-white">
+                          ${priceRange.min.toLocaleString()} - ${priceRange.max.toLocaleString()}
+                        </span>
+                      </motion.div>
+                      <button
+                        onClick={() => setIsPriceFilterExpanded(false)}
+                        className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+                      >
+                        <motion.span
+                          animate={{ rotate: 180 }}
+                          transition={{ duration: 0.4, ease: "easeInOut" }}
+                          className="text-sm"
+                        >
+                          ▼
+                        </motion.span>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Modern Dual Range Slider */}
+                  <div className="relative mb-6">
+                    <div className="flex items-center gap-4">
+                      {/* Min Value Display */}
+                      <div className="flex flex-col items-center min-w-[50px]">
+                        <span className="text-xs text-gray-400 mb-1">Min</span>
+                        <div className="px-2 py-1.5 bg-white/10 rounded-lg border border-white/20">
+                          <input
+                            type="number"
+                            value={priceRange.min}
+                            onChange={(e) => {
+                              const value = Math.max(0, Math.min(parseInt(e.target.value) || 0, priceRange.max - 25));
+                              setPriceRange(prev => ({ ...prev, min: value }));
+                            }}
+                            className="w-full text-xs font-medium text-white bg-transparent border-none outline-none text-center"
+                            style={{ width: '35px' }}
+                            min="0"
+                            max="1000"
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Enhanced Range Slider - Made bigger for finger use */}
+                      <div className="flex-1 relative py-6">
+                        <input
+                          type="range"
+                          min="0"
+                          max="1000"
+                          step="25"
+                          value={priceRange.min}
+                          onChange={(e) => setPriceRange(prev => ({ 
+                            ...prev, 
+                            min: Math.min(parseInt(e.target.value), prev.max - 25) 
+                          }))}
+                          className="absolute w-full h-3 bg-transparent appearance-none cursor-pointer slider z-20"
+                        />
+                        <input
+                          type="range"
+                          min="0"
+                          max="1000"
+                          step="25"
+                          value={priceRange.max}
+                          onChange={(e) => setPriceRange(prev => ({ 
+                            ...prev, 
+                            max: Math.max(parseInt(e.target.value), prev.min + 25) 
+                          }))}
+                          className="absolute w-full h-3 bg-transparent appearance-none cursor-pointer slider z-10"
+                        />
+                        
+                        {/* Track Background - Made bigger */}
+                        <div className="relative h-3 bg-white/10 rounded-full">
+                          {/* Active Range */}
+                          <motion.div 
+                            className="absolute h-3 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-full shadow-lg"
+                            style={{
+                              left: `${(priceRange.min / 1000) * 100}%`,
+                              width: `${((priceRange.max - priceRange.min) / 1000) * 100}%`
+                            }}
+                            layout
+                            transition={{ duration: 0.4, ease: "easeInOut" }}
+                          />
+                          
+                          {/* Glow Effect */}
+                          <div 
+                            className="absolute h-3 bg-gradient-to-r from-blue-400/50 via-purple-400/50 to-pink-400/50 rounded-full blur-sm"
+                            style={{
+                              left: `${(priceRange.min / 1000) * 100}%`,
+                              width: `${((priceRange.max - priceRange.min) / 1000) * 100}%`
+                            }}
+                          />
+                        </div>
+                        
+                        {/* Value indicators on track */}
+                        <div className="absolute -bottom-2 left-0 right-0 flex justify-between text-xs text-gray-500">
+                          <span>$0</span>
+                          <span>$250</span>
+                          <span>$500</span>
+                          <span>$750</span>
+                          <span>$1K</span>
+                        </div>
+                      </div>
+                      
+                      {/* Max Value Display */}
+                      <div className="flex flex-col items-center min-w-[50px]">
+                        <span className="text-xs text-gray-400 mb-1">Max</span>
+                        <div className="px-2 py-1.5 bg-white/10 rounded-lg border border-white/20">
+                          <input
+                            type="number"
+                            value={priceRange.max}
+                            onChange={(e) => {
+                              const value = Math.min(1000, Math.max(parseInt(e.target.value) || 0, priceRange.min + 25));
+                              setPriceRange(prev => ({ ...prev, max: value }));
+                            }}
+                            className="w-full text-xs font-medium text-white bg-transparent border-none outline-none text-center"
+                            style={{ width: '35px' }}
+                            min="0"
+                            max="1000"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Professional Preset Buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        // If already selected, deselect to "Any Budget"
+                        if (priceRange.min === 0 && priceRange.max === 100) {
+                          setPriceRange({ min: 0, max: 1000 });
+                        } else {
+                          setPriceRange({ min: 0, max: 100 });
+                        }
+                      }}
+                      className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all duration-300 ${
+                        priceRange.min === 0 && priceRange.max === 100
+                          ? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 text-white border border-blue-400/50 shadow-lg shadow-blue-500/25'
+                          : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white'
+                      }`}
+                    >
+                      $0 - $100
+                    </button>
+                    <button
+                      onClick={() => {
+                        // If already selected, deselect to "Any Budget"
+                        if (priceRange.min === 100 && priceRange.max === 300) {
+                          setPriceRange({ min: 0, max: 1000 });
+                        } else {
+                          setPriceRange({ min: 100, max: 300 });
+                        }
+                      }}
+                      className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all duration-300 ${
+                        priceRange.min === 100 && priceRange.max === 300
+                          ? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 text-white border border-blue-400/50 shadow-lg shadow-blue-500/25'
+                          : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white'
+                      }`}
+                    >
+                      $100 - $300
+                    </button>
+                    <button
+                      onClick={() => {
+                        // If already selected, deselect to "Any Budget"
+                        if (priceRange.min === 300 && priceRange.max === 1000) {
+                          setPriceRange({ min: 0, max: 1000 });
+                        } else {
+                          setPriceRange({ min: 300, max: 1000 });
+                        }
+                      }}
+                      className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all duration-300 ${
+                        priceRange.min === 300 && priceRange.max === 1000
+                          ? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 text-white border border-blue-400/50 shadow-lg shadow-blue-500/25'
+                          : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:border-white/20 hover:text-white'
+                      }`}
+                    >
+                      $300+
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </div>
+
+        {/* Quick Tip - Below when expanded */}
+        {isPriceFilterExpanded && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4, delay: 0.15, ease: "easeInOut" }}
+          >
+            <div 
+              {...useLongPress(triggerNumberSpam, {
+                threshold: 500,
+                cancelOnMovement: 15,
+              })()}
+              className="bg-blue-500/10 backdrop-blur-sm rounded-xl p-4 border border-blue-400/20 cursor-pointer select-none"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">💡</span>
+                <div>
+                  <p className="text-sm font-medium text-blue-200">Quick Tip</p>
+                  <p className="text-xs text-blue-300/80">Long press any item to add it to your vision board</p>
+                </div>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <span>$</span>
-              <input
-                type="number"
-                value={priceRange.max}
-                onChange={(e) => setPriceRange(prev => ({ ...prev, max: Math.min(1000, parseInt(e.target.value) || 1000) }))}
-                className="w-16 bg-transparent border-b border-gray-600 text-white text-center focus:border-blue-400 focus:outline-none"
-                min="0"
-                max="1000"
-              />
-            </div>
-          </div>
-        </div>
-        
-        {/* Quick preset buttons */}
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={() => setPriceRange({ min: 0, max: 100 })}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-              priceRange.min === 0 && priceRange.max === 100
-                ? 'bg-blue-500/20 text-blue-300 ring-1 ring-blue-400/30'
-                : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-300'
-            }`}
-          >
-            Under $100
-          </button>
-          <button
-            onClick={() => setPriceRange({ min: 100, max: 300 })}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-              priceRange.min === 100 && priceRange.max === 300
-                ? 'bg-blue-500/20 text-blue-300 ring-1 ring-blue-400/30'
-                : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-300'
-            }`}
-          >
-            $100-$300
-          </button>
-          <button
-            onClick={() => setPriceRange({ min: 300, max: 1000 })}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-              priceRange.min === 300 && priceRange.max === 1000
-                ? 'bg-blue-500/20 text-blue-300 ring-1 ring-blue-400/30'
-                : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-300'
-            }`}
-          >
-            $300+
-          </button>
-        </div>
+          </motion.div>
+        )}
       </div>
 
         <div className="px-4 pb-10 space-y-6">
@@ -328,23 +706,15 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           ))}
       </div>
 
-      {(items.length > 0 || footerCta) && (
-        <div className="fixed left-0 right-0 bottom-0 px-4 pb-4 pt-2 bg-gradient-to-t from-slate-900/90 via-slate-800/50 to-transparent backdrop-blur">
+      {items.length > 0 && (
+        <div className="fixed left-0 right-0 bottom-0 px-4 pb-6 pt-2 bg-gradient-to-t from-slate-900/90 via-slate-800/50 to-transparent backdrop-blur">
           <div className="flex gap-2">
-            {onViewVisionBoard && items.length > 0 && (
+            {onViewVisionBoard && (
               <button
                 onClick={onViewVisionBoard}
                 className="flex-1 h-12 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 active:bg-blue-800 transition-colors"
               >
-                View vision board ({items.length})
-              </button>
-            )}
-            {footerCta && (
-              <button
-                onClick={footerCta.onClick}
-                className="h-12 px-4 rounded-xl border border-slate-600 bg-slate-700 text-gray-300 font-medium shadow-sm hover:bg-slate-600"
-              >
-                {footerCta.label}
+                Gear Up & Go 
               </button>
             )}
           </div>
@@ -413,6 +783,40 @@ const PromptRow: React.FC<{
     });
   }, [products, priceFilter]);
 
+  // Calculate price range of available products for helpful messaging
+  const productPriceRange = React.useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 0 };
+    
+    const prices = products.map(product => {
+      const priceStr = product.price?.amount || product.priceRange?.minVariantPrice?.amount || product.variants?.edges?.[0]?.node?.price?.amount || '0';
+      return parseFloat(priceStr.toString().replace(/[^0-9.]/g, ''));
+    }).filter(price => price > 0);
+    
+    if (prices.length === 0) return { min: 0, max: 0 };
+    
+    return {
+      min: Math.min(...prices),
+      max: Math.max(...prices)
+    };
+  }, [products]);
+
+  // Determine what message to show when no products are visible
+  const getFilterMessage = () => {
+    if (products.length === 0) return null; // Don't show anything if no products at all
+    if (filteredProducts.length > 0) return null; // Don't show message if products are visible
+    
+    // Products exist but are filtered out by price
+    if (priceFilter.max < productPriceRange.min) {
+      return `Try a higher budget (items start around $${Math.floor(productPriceRange.min)})`;
+    } else if (priceFilter.min > productPriceRange.max) {
+      return `Try a lower budget (items max around $${Math.ceil(productPriceRange.max)})`;
+    } else {
+      return "No items in this price range";
+    }
+  };
+
+  const filterMessage = getFilterMessage();
+
   // Auto-fetch more products if filtered list is too small
   React.useEffect(() => {
     // Super aggressive fetching: keep fetching until we have at least 10 visible products
@@ -433,6 +837,11 @@ const PromptRow: React.FC<{
   };
 
   const fallbackBlurb = `Curated picks to help you shop ${prompt.label.toLowerCase()}.`;
+
+  // Don't render the section at all if there are no products and it's not due to filtering
+  if (!isLoading && !error && products.length === 0) {
+    return null;
+  }
 
   return (
     <section className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/20 ring-1 ring-white/10">
@@ -459,7 +868,7 @@ const PromptRow: React.FC<{
 
       {!isLoading && !error && (
         <div className="embla overflow-hidden" ref={emblaRef}>
-          <div className="embla__container flex gap-3">
+          <div className="embla__container flex">
             <AnimatePresence>
               {filteredProducts.map((prod, i) => {
                 const key = idOf(prod, i);
@@ -470,7 +879,7 @@ const PromptRow: React.FC<{
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -16, scale: 0.98 }}
                     transition={{ type: "spring", stiffness: 520, damping: 36, mass: 0.8 }}
-                    className="embla__slide flex-[0_0_50%] min-w-0"
+                    className="embla__slide"
                   >
                     <LongPressToAdd
                       product={prod}
@@ -486,9 +895,15 @@ const PromptRow: React.FC<{
               })}
             </AnimatePresence>
 
-            {filteredProducts.length === 0 && (
-              <div className="w-full text-sm text-gray-400 border border-slate-600 bg-slate-800/50 rounded-xl p-4">
-                {products.length === 0 ? "No results matched this query." : "No products found in this price range."}
+            {filteredProducts.length === 0 && filterMessage && (
+              <div className="w-full text-sm text-blue-300 border border-blue-400/30 bg-blue-500/10 rounded-xl p-4 flex items-center gap-3">
+                <span className="text-lg">💰</span>
+                <div>
+                  <p className="font-medium">{filterMessage}</p>
+                  <p className="text-xs text-blue-300/70 mt-1">
+                    Available range: ${Math.floor(productPriceRange.min)} - ${Math.ceil(productPriceRange.max)}
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -508,9 +923,13 @@ const SkeletonSection = () => (
   );
   
 const SkeletonCarousel = () => (
-  <div className="flex gap-3 overflow-hidden">
-    {Array.from({ length: 4 }).map((_, i) => (
-      <div key={i} className="flex-[0_0_50%] h-44 rounded-xl bg-slate-700/60 border border-slate-600 animate-pulse" />
-    ))}
+  <div className="embla overflow-hidden">
+    <div className="embla__container flex">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="embla__slide">
+          <div className="h-44 rounded-xl bg-slate-700/60 border border-slate-600 animate-pulse" />
+        </div>
+      ))}
+    </div>
   </div>
 );

@@ -41,7 +41,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
           onClick={onGetStarted}
           borderRadius="9999px"
           duration={4000}
-          containerClassName="h-16 p-[2px] w-full"
+          containerClassName="h-16 p-[0.4px] w-full"
           borderClassName="h-16 w-16 opacity-90 bg-[radial-gradient(#ffffff_45%,transparent_46%)] drop-shadow-[0_0_10px_rgba(255,255,255,0.85)]"
           className="rounded-full bg-transparent text-white font-semibold text-xl
                     hover:bg-white/10 transition-all duration-200
