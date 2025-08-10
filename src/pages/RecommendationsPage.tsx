@@ -250,33 +250,16 @@ const PromptRow: React.FC<{
 /* ----------------------------- Skeletons ----------------------------- */
 
 const SkeletonSection = () => (
-  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-    <div className="animate-pulse h-5 w-40 bg-white/20 rounded mb-4" />
-    <SkeletonGrid />
-  </div>
-);
-
+    <div className="bg-white rounded-2xl p-6 shadow-lg">
+      <div className="animate-pulse h-5 w-40 bg-gray-200 rounded mb-4" />
+      <SkeletonGrid />
+    </div>
+  );
+  
 const SkeletonGrid = () => (
-  <Swiper
-    effect={'coverflow'}
-    grabCursor={true}
-    centeredSlides={true}
-    slidesPerView={'auto'}
-    spaceBetween={30}
-    coverflowEffect={{
-      rotate: 50,
-      stretch: 0,
-      depth: 100,
-      modifier: 1,
-      slideShadows: true,
-    }}
-    modules={[EffectCoverflow]}
-    className="product-swiper"
-  >
+<div className="grid grid-cols-2 gap-3">
     {Array.from({ length: 6 }).map((_, i) => (
-      <SwiperSlide key={i}>
-        <div className="w-[280px] h-[320px] rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 animate-pulse" />
-      </SwiperSlide>
+    <div key={i} className="h-44 rounded-xl bg-white/60 border border-gray-200 animate-pulse" />
     ))}
-  </Swiper>
+</div>
 );
