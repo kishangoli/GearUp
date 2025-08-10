@@ -56,10 +56,55 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
     }
   }, [currentGoal]);
 
-  // UPDATED: also push each change to global context
+  // UPDATED: also push each change to global context + auto-scroll to next question
   const handleAnswerChange = (questionId: string, value: string | string[]) => {
     updateAnswer(currentGoal, questionId, value);                                   // local page state
     updateFollowUps(currentGoal as FitnessGoal, { [questionId]: value });           // global store
+    
+    // Auto-scroll to next question after a short delay
+    setTimeout(() => {
+      scrollToNextQuestion(questionId);
+    }, 300);
+  };
+
+  // Helper function to scroll to the next question
+  const scrollToNextQuestion = (currentQuestionId: string) => {
+    if (!currentGoalQuestions) return;
+    
+    // Find current question index
+    const currentIndex = currentGoalQuestions.questions.findIndex(q => q.id === currentQuestionId);
+    
+    // Check if there's a next question in the current goal
+    if (currentIndex >= 0 && currentIndex < currentGoalQuestions.questions.length - 1) {
+      // Scroll to next question in current goal
+      const nextQuestionId = currentGoalQuestions.questions[currentIndex + 1].id;
+      scrollToQuestion(nextQuestionId);
+    } else if (currentQuestionId === 'dietary_preference' && currentGoalAnswers['dietary_preference'] === 'Allergies') {
+      // Special case: if we just answered dietary_preference with "Allergies", scroll to allergies question
+      setTimeout(() => {
+        scrollToQuestion(DIETARY_ALLERGIES_QUESTION.id);
+      }, 100);
+    } else {
+      // If it's the last question of current goal, scroll to the navigation button
+      const navigationElement = document.querySelector('[data-navigation]');
+      if (navigationElement) {
+        navigationElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }
+  };
+
+  // Helper function to scroll to a specific question
+  const scrollToQuestion = (questionId: string) => {
+    const questionElement = document.querySelector(`[data-question-id="${questionId}"]`);
+    if (questionElement) {
+      questionElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
   };
 
   const handleNext = () => {
@@ -449,7 +494,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
       <div className="min-h-screen animated-bg">
         {/* Enhanced Progress Bar at Top */}
         <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="h-2 bg-gray-800/80 backdrop-blur-sm border-b border-white/10">
+          <div className="h-1 bg-gray-800/80 backdrop-blur-sm border-b border-white/10">
             <div 
               className="h-full bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 shadow-lg shadow-blue-500/30 transition-all duration-500 ease-out glow-effect"
               style={{ width: `${getProgress()}%` }}
@@ -516,7 +561,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         </div>
 
         {/* Navigation */}
-        <div className="px-4 pb-8">
+        <div className="px-4 pb-8" data-navigation>
           <div className="flex gap-3">
             <button
               onClick={handleNext}

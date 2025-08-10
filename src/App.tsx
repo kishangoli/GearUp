@@ -6,8 +6,29 @@ import { RecommendationsPage } from "./pages/RecommendationsPage";
 import { LoadingPage } from "./pages/LoadingPage";
 import { TipsPage } from "./pages/TipsPage";
 import VisionBoardPage from "./pages/VisionBoardPage";
+import VisionBoardWarmupPage from "./pages/VisionBoardWarmupPage";
 import { useUserAnswers } from "./context/UserAnswersContext";
 import { buildSearchPlanClient } from "./lib/fal";
+
+/* ---------------- Error Boundary (shows errors instead of white screen) --------------- */
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: any }> {
+  state = { error: null as any };
+  static getDerivedStateFromError(error: any) { return { error }; }
+  componentDidCatch(error: any, info: any) { console.error("App error:", error, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 16, fontFamily: "system-ui, sans-serif" }}>
+          <h2>Something went wrong.</h2>
+          <pre style={{ whiteSpace: "pre-wrap" }}>{String(this.state.error?.message || this.state.error)}</pre>
+          <p style={{ color: "#666" }}>Check the console for full stack trace.</p>
+        </div>
+      );
+    }
+    return this.props.children as any;
+  }
+}
+/* ------------------------------------------------------------------------------------- */
 
 type Page =
   | "opener"
@@ -16,12 +37,16 @@ type Page =
   | "loading"
   | "recommendations"
   | "tips"
+  | "visionBoardWarmup"
   | "visionBoard";
 
 export const App: React.FC = () => {
   const [page, setPage] = useState<Page>("opener");
   const [plan, setPlan] = useState<{ prompts: { label: string; query: string }[] } | null>(null);
-  const { answers } = useUserAnswers();
+
+  // ✅ guard answers so we never crash on cold boot
+  const ua = useUserAnswers();
+  const answers = ua?.answers ?? { goals: [] as string[] };
 
   const handleFollowUpsComplete = async () => {
     setPage("loading");
@@ -36,36 +61,66 @@ export const App: React.FC = () => {
     }
   };
 
-  if (page === "opener") return <OpenerPage onGetStarted={() => setPage("main")} />;
+  let content: React.ReactNode;
 
-  if (page === "main")
-    return <MainPage onBack={() => setPage("opener")} onProceed={() => setPage("followUp")} />;
+  switch (page) {
+    case "opener":
+      content = <OpenerPage onGetStarted={() => setPage("main")} />;
+      break;
 
-  if (page === "followUp")
-    return (
-      <FollowUpQuestionsPage
-        selectedGoals={answers.goals}
-        onBack={() => setPage("main")}
-        onComplete={handleFollowUpsComplete}
-      />
-    );
+    case "main":
+      content = <MainPage onBack={() => setPage("opener")} onProceed={() => setPage("followUp")} />;
+      break;
 
-  if (page === "loading") return <LoadingPage />;
+    case "followUp":
+      content = (
+        <FollowUpQuestionsPage
+          selectedGoals={Array.isArray(answers?.goals) ? answers.goals : []}
+          onBack={() => setPage("main")}
+          onComplete={handleFollowUpsComplete}
+        />
+      );
+      break;
 
-  if (page === "tips")
-    return <TipsPage onBack={() => setPage("recommendations")} context={answers} />;
+    case "loading":
+      content = <LoadingPage />;
+      break;
 
-  if (page === "visionBoard")
-    return <VisionBoardPage onBack={() => setPage("recommendations")} />;
+    case "tips":
+      content = <TipsPage onBack={() => setPage("recommendations")} context={answers} />;
+      break;
 
-  // recommendations
+    case "visionBoardWarmup":
+      content = (
+        <VisionBoardWarmupPage
+          onDone={() => setPage("visionBoard")}
+          onBack={() => setPage("recommendations")}
+          title="Getting your board ready…"
+        />
+      );
+      break;
+
+    case "visionBoard":
+      content = <VisionBoardPage onBack={() => setPage("recommendations")} />;
+      break;
+
+    default:
+      // recommendations (default/fallback)
+      content = (
+        <RecommendationsPage
+          onBack={() => setPage("followUp")}
+          plan={plan}
+          loading={false}
+          footerCta={{ label: "Get tips for my cart", onClick: () => setPage("tips") }}
+          onViewVisionBoard={() => setPage("visionBoardWarmup")}
+        />
+      );
+  }
+
   return (
-    <RecommendationsPage
-      onBack={() => setPage("followUp")}
-      plan={plan}
-      loading={false}
-      footerCta={{ label: "Get tips for my cart", onClick: () => setPage("tips") }}
-      onViewVisionBoard={() => setPage("visionBoard")}
-    />
+    <ErrorBoundary>
+      {content}
+      
+    </ErrorBoundary>
   );
 };

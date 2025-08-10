@@ -39,10 +39,46 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
 
   // ---------- global "added" toast ----------
   const [addedToast, setAddedToast] = React.useState(false);
-  const notifyAdded = React.useCallback(() => {
-    setAddedToast(true);
-    const t = setTimeout(() => setAddedToast(false), 1100);
-    return () => clearTimeout(t);
+  const [flyingItems, setFlyingItems] = React.useState<Array<{
+    id: string;
+    startX: number;
+    startY: number;
+    product: any;
+  }>>([]);
+
+  const notifyAdded = React.useCallback((product: any, element: HTMLElement | null) => {
+    if (element) {
+      // Get the element's position
+      const rect = element.getBoundingClientRect();
+      const flyingId = `flying-${Date.now()}-${Math.random()}`;
+      
+      // Add glow effect to the Review Your Gear button
+      const button = document.querySelector('[data-review-gear-button]');
+      if (button) {
+        button.classList.add('receiving-items');
+        setTimeout(() => {
+          button.classList.remove('receiving-items');
+        }, 1200);
+      }
+      
+      // Add flying item animation
+      setFlyingItems(prev => [...prev, {
+        id: flyingId,
+        startX: rect.left + rect.width / 2,
+        startY: rect.top + rect.height / 2,
+        product
+      }]);
+
+      // Remove flying item after animation
+      setTimeout(() => {
+        setFlyingItems(prev => prev.filter(item => item.id !== flyingId));
+      }, 1200);
+    } else {
+      // Fallback to toast if no element position available
+      setAddedToast(true);
+      const t = setTimeout(() => setAddedToast(false), 1100);
+      return () => clearTimeout(t);
+    }
   }, []);
 
   // ---------- price filter ----------
@@ -280,6 +316,64 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
         }
 
+        /* Flying item animation */
+        @keyframes flyToGear {
+          0% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg) translateY(0);
+          }
+          15% {
+            opacity: 0.95;
+            transform: scale(0.9) rotate(3deg) translateY(400px);
+          }
+          30% {
+            opacity: 0.8;
+            transform: scale(0.7) rotate(8deg) translateY(900px);
+          }
+          45% {
+            opacity: 0.6;
+            transform: scale(0.5) rotate(15deg) translateY(1500px);
+          }
+          60% {
+            opacity: 0.4;
+            transform: scale(0.3) rotate(20deg) translateY(2200px);
+          }
+          75% {
+            opacity: 0.2;
+            transform: scale(0.15) rotate(25deg) translateY(3000px);
+          }
+          90% {
+            opacity: 0.05;
+            transform: scale(0.05) rotate(30deg) translateY(3800px);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.02) rotate(35deg) translateY(4500px);
+          }
+        }
+        
+        .flying-item {
+          animation: flyToGear 1200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+          pointer-events: none;
+          position: fixed;
+          z-index: 9999;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+          border: 2px solid rgba(59, 130, 246, 0.5);
+        }
+
+        /* Button glow effect when items are flying */
+        [data-review-gear-button].receiving-items {
+          box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(59, 130, 246, 0.3) !important;
+          animation: buttonPulse 1.2s ease-in-out;
+        }
+        
+        @keyframes buttonPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+        }
+
         /* Performance optimizations for smooth animations */
         * {
           will-change: auto;
@@ -296,21 +390,29 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           perspective: 1000px;
         }
 
-        /* Enhanced Embla Carousel Spacing */
+        /* Enhanced Embla Carousel Spacing - Edge to Edge */
         .embla {
           overflow: hidden;
         }
         
         .embla__container {
           display: flex;
-          margin-left: -12px; /* Offset for consistent spacing */
+          margin-left: 0; /* Start from edge */
         }
         
         .embla__slide {
           flex: 0 0 auto;
-          padding-left: 12px; /* Consistent 12px spacing between slides */
+          padding-left: 16px; /* 16px spacing between slides (equivalent to px-4) */
           min-width: 160px; /* Minimum width to prevent squishing */
-          max-width: calc(50% - 6px); /* Maximum 50% width minus half the gap */
+          max-width: calc(50% - 8px); /* Maximum 50% width minus half the gap */
+        }
+        
+        .embla__slide:first-child {
+          padding-left: 16px; /* First slide starts with padding from edge */
+        }
+        
+        .embla__slide:last-child {
+          padding-right: 16px; /* Last slide ends with padding to edge */
         }
         
         /* Ensure product cards don't overflow their containers */
@@ -347,6 +449,45 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
             </motion.div>
         )}
         </AnimatePresence>
+
+      {/* Flying Items Animation */}
+      {flyingItems.map((item) => {
+        // Calculate the target position (center of Review Your Gear button)
+        const targetElement = document.querySelector('[data-review-gear-button]');
+        const targetRect = targetElement?.getBoundingClientRect();
+        
+        // If button exists, target its center; otherwise use bottom center as fallback
+        const targetX = targetRect ? targetRect.left + targetRect.width / 2 : window.innerWidth / 2;
+        const targetY = targetRect ? targetRect.top + targetRect.height / 2 : window.innerHeight - 60;
+
+        return (
+          <div
+            key={item.id}
+            className="flying-item"
+            style={{
+              left: `${item.startX}px`,
+              top: `${item.startY}px`,
+              width: '60px',
+              height: '60px',
+              '--target-x': `${targetX - item.startX}px`,
+              '--target-y': `${targetY - item.startY}px`,
+            } as React.CSSProperties}
+          >
+            {/* Mini product image */}
+            {item.product?.images?.[0]?.url || item.product?.featuredImage?.url ? (
+              <img
+                src={item.product.images?.[0]?.url || item.product.featuredImage?.url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                📦
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {/* Easter Egg Number Spam */}
       {showNumberSpam && (
@@ -684,11 +825,11 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         )}
       </div>
 
-        <div className="px-4 pb-10 space-y-6">
+        <div className="space-y-8">
           {loading && <SkeletonSection />}
 
           {!loading && plan && plan.prompts.length === 0 && (
-            <div className="bg-slate-700/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-600/30 text-gray-300">
+            <div className="px-4 bg-slate-700/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-600/30 text-gray-300">
               No prompts yet. Try adjusting your answers.
             </div>
           )}
@@ -712,9 +853,10 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
             {onViewVisionBoard && (
               <button
                 onClick={onViewVisionBoard}
+                data-review-gear-button
                 className="flex-1 h-12 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 active:bg-blue-800 transition-colors"
               >
-                Gear Up & Go 
+              Review Your Gear 
               </button>
             )}
           </div>
@@ -730,7 +872,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
 const PromptRow: React.FC<{
   prompt: Prompt;
   blurb?: string;
-  onAnyItemAdded: () => void;
+  onAnyItemAdded: (product: any, element: HTMLElement | null) => void;
   priceFilter: { min: number; max: number };
 }> = ({ prompt, blurb, onAnyItemAdded, priceFilter }) => {
   const [fetchCount, setFetchCount] = React.useState(20);
@@ -844,25 +986,28 @@ const PromptRow: React.FC<{
   }
 
   return (
-    <section className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/20 ring-1 ring-white/10">
+    <section className="w-full">
+      <div className="px-4 mb-4">
+        <h2 className="text-lg font-semibold text-white">{prompt.label}</h2>
 
-      <h2 className="text-lg font-semibold text-white">{prompt.label}</h2>
+              {blurb === "__loading__" ? (
+          <div className="h-3 w-52 bg-slate-600 rounded mt-2 animate-pulse" />
+        ) : (
+          <p className="text-sm text-gray-300 mt-1">{blurb || fallbackBlurb}</p>
+        )}
 
-      {blurb === "__loading__" ? (
-        <div className="h-3 w-52 bg-slate-600 rounded mt-2 mb-6 animate-pulse" />
-      ) : (
-        <p className="text-sm text-gray-300 mt-1 mb-6">{blurb || fallbackBlurb}</p>
-      )}
-
-      <p className="sr-only">
-        Query: <span className="font-mono">{prompt.query}</span>
-      </p>
+        <p className="sr-only">
+          Query: <span className="font-mono">{prompt.query}</span>
+        </p>
+      </div>
 
       {isLoading && <SkeletonCarousel />}
 
       {!isLoading && error && (
-        <div className="text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl p-3">
-          Couldn’t load products for this prompt. Try again.
+        <div className="px-4">
+          <div className="text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl p-3">
+            Couldn't load products for this prompt. Try again.
+          </div>
         </div>
       )}
 
@@ -883,9 +1028,9 @@ const PromptRow: React.FC<{
                   >
                     <LongPressToAdd
                       product={prod}
-                      onAdded={() => {
+                      onAdded={(product, element) => {
                         removeById(key);
-                        onAnyItemAdded();
+                        onAnyItemAdded(product, element);
                       }}
                     >
                       <ProductCard product={prod} />
@@ -896,13 +1041,15 @@ const PromptRow: React.FC<{
             </AnimatePresence>
 
             {filteredProducts.length === 0 && filterMessage && (
-              <div className="w-full text-sm text-blue-300 border border-blue-400/30 bg-blue-500/10 rounded-xl p-4 flex items-center gap-3">
-                <span className="text-lg">💰</span>
-                <div>
-                  <p className="font-medium">{filterMessage}</p>
-                  <p className="text-xs text-blue-300/70 mt-1">
-                    Available range: ${Math.floor(productPriceRange.min)} - ${Math.ceil(productPriceRange.max)}
-                  </p>
+              <div className="w-full px-4">
+                <div className="text-sm text-blue-300 border border-blue-400/30 bg-blue-500/10 rounded-xl p-4 flex items-center gap-3">
+                  <span className="text-lg">💰</span>
+                  <div>
+                    <p className="font-medium">{filterMessage}</p>
+                    <p className="text-xs text-blue-300/70 mt-1">
+                      Available range: ${Math.floor(productPriceRange.min)} - ${Math.ceil(productPriceRange.max)}
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -916,8 +1063,10 @@ const PromptRow: React.FC<{
 /* ----------------------------- Skeletons ----------------------------- */
 
 const SkeletonSection = () => (
-    <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/20 ring-1 ring-white/10">
-      <div className="animate-pulse h-5 w-40 bg-slate-600 rounded mb-4" />
+    <div className="w-full">
+      <div className="px-4 mb-4">
+        <div className="animate-pulse h-5 w-40 bg-slate-600 rounded" />
+      </div>
       <SkeletonCarousel />
     </div>
   );

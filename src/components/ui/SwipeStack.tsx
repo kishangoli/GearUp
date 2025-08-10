@@ -21,6 +21,7 @@ export interface SwipeStackProps {
   onSwipeLeft?: (key: string) => void | Promise<void>;
   onSwipeRight?: (key: string) => void | Promise<void>;
   onCardClick?: (product: any) => void;
+  onTopChange?: (topItem: { key: string; product: any } | null) => void;
   dropTargets?: {
     getRects: () => { left: DOMRect | null; right: DOMRect | null };
     onHover?: (side: "left" | "right" | null) => void;
@@ -51,6 +52,7 @@ export default function SwipeStack({
   onSwipeLeft,
   onSwipeRight,
   onCardClick,
+  onTopChange,
   dropTargets,
 }: SwipeStackProps) {
   const [order, setOrder] = React.useState<string[]>([]);
@@ -65,6 +67,21 @@ export default function SwipeStack({
       return [...kept, ...incoming];
     });
   }, [JSON.stringify(items.map(keyExtractor))]);
+
+  // Track top card changes and notify parent
+  React.useEffect(() => {
+    if (onTopChange) {
+      if (order.length === 0) {
+        onTopChange(null);
+      } else {
+        const topKey = order[order.length - 1];
+        const topProduct = keyMap[topKey];
+        if (topProduct) {
+          onTopChange({ key: topKey, product: topProduct });
+        }
+      }
+    }
+  }, [order, keyMap, onTopChange]);
 
   const handleLeft = async (key: string) => {
     setOrder((prev) => prev.filter((k) => k !== key));

@@ -7,7 +7,7 @@ import { useVisionBoard } from "../../context/VisionBoardContext";
 type Props = {
   product: any;
   children: React.ReactNode;
-  onAdded?: () => void; // parent removes from grid & triggers global toast
+  onAdded?: (product: any, element: HTMLElement | null) => void; // parent removes from grid & triggers animation
 };
 
 export default function LongPressToAdd({ product, children, onAdded }: Props) {
@@ -15,6 +15,7 @@ export default function LongPressToAdd({ product, children, onAdded }: Props) {
 
   const [popping, setPopping] = React.useState(false);
   const [disabled, setDisabled] = React.useState(false);
+  const elementRef = React.useRef<HTMLDivElement>(null);
 
   // Suppress the click that often follows a long-press so ProductCard doesn't open
   const suppressClickRef = React.useRef(false);
@@ -32,7 +33,7 @@ export default function LongPressToAdd({ product, children, onAdded }: Props) {
     // pop animation + add
     setPopping(true);
     add(product);
-    onAdded?.();
+    onAdded?.(product, elementRef.current);
 
     // suppress the "click after press" for a moment
     suppressClickRef.current = true;
@@ -53,6 +54,7 @@ export default function LongPressToAdd({ product, children, onAdded }: Props) {
 
   return (
     <div
+      ref={elementRef}
       {...bind()}
       onClickCapture={swallowIfSuppressed}
       onPointerUpCapture={swallowIfSuppressed}
