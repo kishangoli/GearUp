@@ -1,8 +1,13 @@
+export interface OptionWithIcon {
+  text: string;
+  icon: string;
+}
+
 export interface FollowUpQuestion {
   id: string;
   type: 'radio' | 'text' | 'multi-select';
   question: string;
-  options?: string[];
+  options?: string[] | OptionWithIcon[];
   placeholder?: string;
   required: boolean;
   icon: string;

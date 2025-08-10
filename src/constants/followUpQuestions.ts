@@ -11,7 +11,11 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
         id: 'strength_experience',
         type: 'radio',
         question: 'What\'s your experience level?',
-        options: ['Beginner', 'Intermediate', 'Advanced'],
+        options: [
+          { text: 'Beginner', icon: '🌱' },
+          { text: 'Intermediate', icon: '📈' },
+          { text: 'Advanced', icon: '🏆' }
+        ],
         required: true,
         icon: '📊'
       },
@@ -19,9 +23,13 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
         id: 'strength_location',
         type: 'radio',
         question: 'Where do you prefer to work out?',
-        options: ['Home', 'Gym', 'Both'],
+        options: [
+          { text: 'Home', icon: '🏠' },
+          { text: 'Gym', icon: '🏋️' },
+          { text: 'Both', icon: '🔄' }
+        ],
         required: true,
-        icon: '🏠'
+        icon: '📍'
       }
     ]
   },
@@ -35,7 +43,12 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
         id: 'dietary_goal',
         type: 'radio',
         question: 'What\'s your primary nutrition goal?',
-        options: ['Weight loss', 'Muscle gain', 'Performance', 'Wellness'],
+        options: [
+          { text: 'Weight loss', icon: '⚖️' },
+          { text: 'Muscle gain', icon: '💪' },
+          { text: 'Performance', icon: '⚡' },
+          { text: 'Wellness', icon: '🌿' }
+        ],
         required: true,
         icon: '🎯'
       },
@@ -43,7 +56,13 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
         id: 'dietary_preference',
         type: 'radio',
         question: 'Any dietary preferences or restrictions?',
-        options: ['None', 'Vegan', 'Vegetarian', 'Keto', 'Allergies'],
+        options: [
+          { text: 'None', icon: '✅' },
+          { text: 'Vegan', icon: '🌱' },
+          { text: 'Vegetarian', icon: '🥬' },
+          { text: 'Keto', icon: '🥑' },
+          { text: 'Allergies', icon: '⚠️' }
+        ],
         required: true,
         icon: '🚫'
       }
@@ -51,23 +70,36 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
   },
   {
     goalId: 'running',
-    title: 'Running & Endurance Details',
-    description: 'Tell us about your running and sports focus',
+    title: 'Sports & Activity Details',
+    description: 'Tell us about your sports and activity focus',
     icon: '🏃',
     questions: [
       {
         id: 'running_sport',
         type: 'radio',
         question: 'What type of sport or activity?',
-        options: ['Basketball', 'Soccer', 'Baseball', 'Football', 'Running', 'Other'],
+        options: [
+          { text: 'Basketball', icon: '🏀' },
+          { text: 'Soccer', icon: '⚽' },
+          { text: 'Baseball', icon: '⚾' },
+          { text: 'Football', icon: '🏈' },
+          { text: 'Running', icon: '🏃' },
+          { text: 'Other', icon: '🎯' }
+        ],
         required: true,
-        icon: '⚽'
+        icon: '🏆'
       },
       {
         id: 'running_focus',
         type: 'radio',
         question: 'What skill are you focusing on?',
-        options: ['Speed', 'Strength', 'Endurance', 'Agility', 'Technique'],
+        options: [
+          { text: 'Speed', icon: '💨' },
+          { text: 'Strength', icon: '💪' },
+          { text: 'Endurance', icon: '🔋' },
+          { text: 'Agility', icon: '🤸' },
+          { text: 'Technique', icon: '🎯' }
+        ],
         required: true,
         icon: '⚡'
       }
@@ -83,15 +115,26 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
         id: 'recovery_focus',
         type: 'radio',
         question: 'What type of recovery do you need?',
-        options: ['Muscle soreness', 'Injury rehab', 'Mobility & flexibility', 'Relaxation'],
+        options: [
+          { text: 'Muscle soreness', icon: '🦵' },
+          { text: 'Injury rehab', icon: '🩹' },
+          { text: 'Mobility & flexibility', icon: '🤸' },
+          { text: 'Relaxation', icon: '😌' }
+        ],
         required: true,
-        icon: '🩹'
+        icon: '🎯'
       },
       {
         id: 'recovery_method',
         type: 'radio',
         question: 'What recovery method do you prefer?',
-        options: ['Massage tools', 'Compression gear', 'Cold therapy', 'Stretching aids', 'Supplements'],
+        options: [
+          { text: 'Massage tools', icon: '🪃' },
+          { text: 'Compression gear', icon: '🧤' },
+          { text: 'Cold therapy', icon: '🧊' },
+          { text: 'Stretching aids', icon: '🤸' },
+          { text: 'Supplements', icon: '💊' }
+        ],
         required: true,
         icon: '🛠️'
       }

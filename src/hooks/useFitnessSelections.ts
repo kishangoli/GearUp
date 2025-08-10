@@ -8,12 +8,26 @@ export const useFitnessSelections = () => {
   });
 
   const toggleGoal = useCallback((goal: FitnessGoal) => {
-    setSelections(prev => ({
-      ...prev,
-      goals: prev.goals.includes(goal)
-        ? prev.goals.filter(g => g !== goal)
-        : [...prev.goals, goal]
-    }));
+    setSelections(prev => {
+      const isCurrentlySelected = prev.goals.includes(goal);
+      
+      if (isCurrentlySelected) {
+        // If unselecting a goal, remove it from goals and clear its experience level
+        const newExperienceLevels = { ...prev.experienceLevels };
+        delete newExperienceLevels[goal];
+        
+        return {
+          goals: prev.goals.filter(g => g !== goal),
+          experienceLevels: newExperienceLevels
+        };
+      } else {
+        // If selecting a goal, just add it to goals (experience level will be set separately)
+        return {
+          ...prev,
+          goals: [...prev.goals, goal]
+        };
+      }
+    });
   }, []);
 
   const setExperienceLevel = useCallback((goal: FitnessGoal, level: ExperienceLevel) => {
