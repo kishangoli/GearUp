@@ -2,5 +2,9 @@
   "name": "testMini",
   "permissions": [],
   "privacy_policy_url": "https://example.com/privacy",
-  "terms_url": "https://example.com/terms"
+  "terms_url": "https://example.com/terms",
+  "trusted_domains": [
+    "https://queue.fal.run",
+    "https://fal.run"
+  ]
 }
