@@ -34,6 +34,18 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
   const currentGoalQuestions = FOLLOW_UP_QUESTIONS.find(q => q.goalId === currentGoal);
   const currentGoalAnswers = answers[currentGoal] || {};
 
+  // Scroll to top when currentGoal changes
+  React.useEffect(() => {
+    // Scroll the root container instead of window since body is position: fixed
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Fallback to window scroll
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentGoal]);
+
   // UPDATED: also push each change to global context
   const handleAnswerChange = (questionId: string, value: string | string[]) => {
     updateAnswer(currentGoal, questionId, value);                                   // local page state
