@@ -1,6 +1,8 @@
 // src/lib/fal.ts
 import { fal } from "@fal-ai/client";
 import type { UserAnswers } from "../types/answers";
+import { preprocessAnswers } from "../lib/preprocess";
+
 
 /**
  * TEMP (dev/hackathon): keep the key here.
@@ -31,31 +33,50 @@ export interface SearchPlan {
  * Each prompt becomes one horizontal row on the Recommendations page.
  */
 export async function buildSearchPlanClient(answers: UserAnswers): Promise<SearchPlan> {
-  // Single prompt string (works with fal-ai/any-llm). We pin a model and ask for JSON.
-  const prompt = `
-You are a product search planner for a fitness shopping app.
-Given the user's onboarding answers (goals, experience, follow-ups),
-produce 3–6 FOCUSED search prompts for different rows, like:
-- "Strength essentials"
-- "Recovery tools"
-- "Protein & blends"
-- "Running hydration & fuel"
+  // ✅ Step 2: run preprocessing before using answers in prompt
+  const cleanAnswers = preprocessAnswers(answers);
 
-STRICT OUTPUT (JSON ONLY):
+ const prompt = `
+You are a product search planner for a fitness & nutrition Shopify store.
+
+TASK:
+Generate 3–6 focused product search prompts (each with "label" and "query") 
+that match the user's onboarding answers.
+
+STRICT OUTPUT FORMAT:
 {
   "prompts": [
     { "label": string, "query": string }
   ]
 }
 
-Rules:
-- Make each prompt narrow and shoppable (human-readable queries).
-- Use the user's data to tailor difficulty, environment (home/gym), budget hints, dietary prefs, etc.
-- No extra prose, no code fences, JSON only.
+GENERAL RULES:
+- Each prompt must be narrow, specific, and ready for Shopify search.
+- Always incorporate all 3 questions for the selected goal.
+- Include variety: gear, apparel, accessories, nutrition, recovery (as relevant).
+- Avoid repeating the same product type in multiple prompts.
+- Tailor difficulty, environment (home/gym), dietary prefs, skill level, etc.
+- Use plain, human-readable product names in labels, but keep queries optimized.
+- No emojis, no hype, no guarantees or medical claims.
+- Do not recommend large scale items (e.g. gym equipment) unless explicitly mentioned.
+- Make sure to not recommend items which may be better suited for a different goal. (i.e. don't recommend running shoes for strength training or foam rollers for sports)
+- Make sure to adhere to the user's dietary preferences and allergies.
+- Make sure to not reccomend items which may be meant for a different skill level than the user selected. (i.e. don't recommend advanced supplements for a beginner or beginner-friendly items for an advanced user)
+- 
 
 UserAnswers:
-${JSON.stringify(answers)}
+${JSON.stringify(cleanAnswers)}
+
+
+GOAL-SPECIFIC INSTRUCTIONS:
+- strength: Focus on training equipment, progressive overload tools, workout apparel, and supplements aligned with the user's training focus.
+- dietary: Suggest supplements, meal prep tools, specific diet-friendly snacks, and cooking appliances based on dietary goal and food preference.
+- running: Prioritize sport-specific shoes, training gear, hydration, and skill-development tools based on sport type and training frequency.
+- recovery: Recommend tools and products that align with recovery method and timing preference, including mobility aids, therapy gear, and relaxation items.
+
+Return JSON only.
 `.trim();
+
 
   const { data } = await fal.run("fal-ai/any-llm", {
     input: {

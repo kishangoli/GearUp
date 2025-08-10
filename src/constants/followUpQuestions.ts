@@ -30,6 +30,19 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
         ],
         required: true,
         icon: '📍'
+      },
+      {
+        id: 'strength_focus',
+        type: 'radio',
+        question: 'What\'s your main training focus?',
+        options: [
+          { text: 'Hypertrophy (muscle size)', icon: '🏋️‍♂️' },
+          { text: 'Strength & power', icon: '🏃' },
+          { text: 'Explosiveness', icon: '⚡' },
+          { text: 'General fitness', icon: '💪' }
+        ],
+        required: true,
+        icon: '🎯'
       }
     ]
   },
@@ -65,6 +78,19 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
         ],
         required: true,
         icon: '🚫'
+      },
+      {
+        id: 'dietary_method',
+        type: 'radio',
+        question: 'How do you prefer to get your nutrition?',
+        options: [
+          { text: 'Whole foods', icon: '🍽️' },
+          { text: 'Shakes & supplements', icon: '🥤' },
+          { text: 'Meal prep & ready-to-eat', icon: '🍱' },
+          { text: 'Mixed approach', icon: '⚖️' }
+        ],
+        required: true,
+        icon: '🍴'
       }
     ]
   },
@@ -102,6 +128,19 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
         ],
         required: true,
         icon: '⚡'
+      },
+      {
+        id: 'running_frequency',
+        type: 'radio',
+        question: 'How often do you train or practice?',
+        options: [
+          { text: '1–2 days/week', icon: '📅' },
+          { text: '3–4 days/week', icon: '📆' },
+          { text: '5+ days/week', icon: '🗓️' },
+          { text: 'Seasonally / irregular', icon: '🔄' }
+        ],
+        required: true,
+        icon: '📊'
       }
     ]
   },
@@ -137,6 +176,19 @@ export const FOLLOW_UP_QUESTIONS: FollowUpSection[] = [
         ],
         required: true,
         icon: '🛠️'
+      },
+      {
+        id: 'recovery_timing',
+        type: 'radio',
+        question: 'When do you usually focus on recovery?',
+        options: [
+          { text: 'After every workout', icon: '🛌' },
+          { text: 'A few times a week', icon: '📆' },
+          { text: 'Only when sore or injured', icon: '⚡' },
+          { text: 'Before bed / end of day', icon: '🌙' }
+        ],
+        required: true,
+        icon: '⏰'
       }
     ]
   }

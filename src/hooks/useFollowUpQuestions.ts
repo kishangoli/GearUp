@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { FollowUpAnswers, GoalFollowUpData } from '../types/followUpQuestions';
 import { FitnessGoal } from '../types/fitness';
+import { FOLLOW_UP_QUESTIONS, DIETARY_ALLERGIES_QUESTION } from '../constants/followUpQuestions';
 
 export const useFollowUpQuestions = (selectedGoals: FitnessGoal[]) => {
   const [answers, setAnswers] = useState<GoalFollowUpData>({});
@@ -32,9 +33,25 @@ export const useFollowUpQuestions = (selectedGoals: FitnessGoal[]) => {
 
   const canProceedToNext = useCallback((goalId: string) => {
     const goalAnswers = answers[goalId] || {};
+    const goalQuestions = FOLLOW_UP_QUESTIONS.find(q => q.goalId === goalId);
+    
+    if (!goalQuestions) return false;
+    
     // Check if all required questions for this goal are answered
-    // This will be implemented when we integrate with the questions data
-    return Object.keys(goalAnswers).length > 0;
+    for (const question of goalQuestions.questions) {
+      if (question.required && !goalAnswers[question.id]) {
+        return false;
+      }
+    }
+    
+    // Special case for dietary goal - check allergies question if needed
+    if (goalId === 'dietary' && goalAnswers['dietary_preference'] === 'Allergies') {
+      if (!goalAnswers[DIETARY_ALLERGIES_QUESTION.id] || goalAnswers[DIETARY_ALLERGIES_QUESTION.id].toString().trim() === '') {
+        return false;
+      }
+    }
+    
+    return true;
   }, [answers]);
 
   const canFinish = useCallback(() => {
@@ -42,10 +59,37 @@ export const useFollowUpQuestions = (selectedGoals: FitnessGoal[]) => {
   }, [selectedGoals, canProceedToNext]);
 
   const getProgress = useCallback(() => {
-    const totalGoals = selectedGoals.length;
-    const completedGoals = selectedGoals.filter(goal => canProceedToNext(goal)).length;
-    return totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
-  }, [selectedGoals, canProceedToNext]);
+    // Calculate progress based on questions answered vs total questions across all goals
+    let totalQuestions = 0;
+    let answeredQuestions = 0;
+    
+    selectedGoals.forEach(goalId => {
+      const goalQuestions = FOLLOW_UP_QUESTIONS.find(q => q.goalId === goalId);
+      if (goalQuestions) {
+        const goalAnswers = answers[goalId] || {};
+        
+        // Count main questions
+        goalQuestions.questions.forEach(question => {
+          if (question.required) {
+            totalQuestions += 1;
+            if (goalAnswers[question.id]) {
+              answeredQuestions += 1;
+            }
+          }
+        });
+        
+        // Count conditional dietary allergies question if applicable
+        if (goalId === 'dietary' && goalAnswers['dietary_preference'] === 'Allergies') {
+          totalQuestions += 1; // Add the allergies question
+          if (goalAnswers[DIETARY_ALLERGIES_QUESTION.id] && goalAnswers[DIETARY_ALLERGIES_QUESTION.id].toString().trim() !== '') {
+            answeredQuestions += 1;
+          }
+        }
+      }
+    });
+    
+    return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
+  }, [selectedGoals, answers]);
 
   const resetAnswers = useCallback(() => {
     setAnswers({});

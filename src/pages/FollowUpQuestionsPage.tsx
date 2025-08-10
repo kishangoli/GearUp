@@ -23,7 +23,6 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
     updateAnswer,
     goToNextGoal,
     goToPreviousGoal,
-    canProceedToNext,
     canFinish,
     getProgress
   } = useFollowUpQuestions(selectedGoals);
@@ -31,19 +30,127 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
   // NEW: hook into global store
   const { updateFollowUps } = useUserAnswers();
 
+  const [showValidationErrors, setShowValidationErrors] = React.useState(false);
+
   const currentGoalQuestions = FOLLOW_UP_QUESTIONS.find(q => q.goalId === currentGoal);
   const currentGoalAnswers = answers[currentGoal] || {};
 
-  // UPDATED: also push each change to global context
+  // Helper function to check if a question is answered
+  const isQuestionAnswered = (questionId: string) => {
+    const answer = currentGoalAnswers[questionId];
+    if (typeof answer === 'string') {
+      return answer.trim() !== '';
+    }
+    return !!answer;
+  };
+
+  // Scroll to top when currentGoal changes
+  React.useEffect(() => {
+    // Scroll the root container instead of window since body is position: fixed
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // Fallback to window scroll
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentGoal]);
+
+  // UPDATED: also push each change to global context + auto-scroll to next question
   const handleAnswerChange = (questionId: string, value: string | string[]) => {
     updateAnswer(currentGoal, questionId, value);                                   // local page state
     updateFollowUps(currentGoal as FitnessGoal, { [questionId]: value });           // global store
+    
+    // Auto-scroll to next question after a short delay
+    setTimeout(() => {
+      scrollToNextQuestion(questionId);
+    }, 300);
+  };
+
+  // Helper function to scroll to the next question
+  const scrollToNextQuestion = (currentQuestionId: string) => {
+    if (!currentGoalQuestions) return;
+    
+    // Find current question index
+    const currentIndex = currentGoalQuestions.questions.findIndex(q => q.id === currentQuestionId);
+    
+    // Check if there's a next question in the current goal
+    if (currentIndex >= 0 && currentIndex < currentGoalQuestions.questions.length - 1) {
+      // Scroll to next question in current goal
+      const nextQuestionId = currentGoalQuestions.questions[currentIndex + 1].id;
+      scrollToQuestion(nextQuestionId);
+    } else if (currentQuestionId === 'dietary_preference' && currentGoalAnswers['dietary_preference'] === 'Allergies') {
+      // Special case: if we just answered dietary_preference with "Allergies", scroll to allergies question
+      setTimeout(() => {
+        scrollToQuestion(DIETARY_ALLERGIES_QUESTION.id);
+      }, 100);
+    } else {
+      // If it's the last question of current goal, scroll to the navigation button
+      const navigationElement = document.querySelector('[data-navigation]');
+      if (navigationElement) {
+        navigationElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }
+  };
+
+  // Helper function to scroll to a specific question
+  const scrollToQuestion = (questionId: string) => {
+    const questionElement = document.querySelector(`[data-question-id="${questionId}"]`);
+    if (questionElement) {
+      questionElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
   };
 
   const handleNext = () => {
+    // Check if all required questions are answered
+    const unansweredQuestions: string[] = [];
+    
+    // Check main questions
+    if (currentGoalQuestions) {
+      for (const question of currentGoalQuestions.questions) {
+        if (question.required && !isQuestionAnswered(question.id)) {
+          unansweredQuestions.push(question.id);
+        }
+      }
+    }
+    
+    // Check conditional allergies question
+    if (currentGoal === 'dietary' && currentGoalAnswers['dietary_preference'] === 'Allergies') {
+      if (DIETARY_ALLERGIES_QUESTION.required && !isQuestionAnswered(DIETARY_ALLERGIES_QUESTION.id)) {
+        unansweredQuestions.push(DIETARY_ALLERGIES_QUESTION.id);
+      }
+    }
+    
+    if (unansweredQuestions.length > 0) {
+      // Show validation errors and scroll to first unanswered question
+      setShowValidationErrors(true);
+      
+      // Find and scroll to the first unanswered question
+      setTimeout(() => {
+        const firstUnansweredElement = document.querySelector(
+          `[data-question-id="${unansweredQuestions[0]}"]`
+        );
+        if (firstUnansweredElement) {
+          firstUnansweredElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }
+      }, 100);
+      
+      return; // Don't proceed
+    }
+    
     if (canFinish()) {
       onComplete(answers); // We'll read full answers from context on the next page.
     } else {
+      setShowValidationErrors(false); // Reset validation errors on successful proceed
       goToNextGoal();
     }
   };
@@ -119,17 +226,27 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
     if (currentGoalQuestions?.goalId === 'dietary') {
       const dietaryPreference = currentGoalAnswers['dietary_preference'];
       if (dietaryPreference === 'Allergies') {
+        const isAnswered = isQuestionAnswered(DIETARY_ALLERGIES_QUESTION.id);
+        const showWarning = DIETARY_ALLERGIES_QUESTION.required && !isAnswered && showValidationErrors;
+        
         return (
-          <div className="question-card rounded-2xl p-6 mt-6 fade-in-stagger" style={{ animationDelay: '0.4s' }}>
+          <div 
+            data-question-id={DIETARY_ALLERGIES_QUESTION.id}
+            className={`question-card rounded-2xl p-6 mt-6 fade-in-stagger ${showWarning ? 'border-red-400/50 bg-red-500/5' : ''}`} 
+            style={{ animationDelay: '0.4s' }}
+          >
             <div className="flex items-center mb-4">
               <span className="text-2xl mr-3">{DIETARY_ALLERGIES_QUESTION.icon}</span>
               <h3 className="text-lg font-semibold text-white">
                 {DIETARY_ALLERGIES_QUESTION.question}
               </h3>
-              {DIETARY_ALLERGIES_QUESTION.required && (
-                <span className="ml-2 text-red-400 text-sm">*</span>
-              )}
             </div>
+            {showWarning && (
+              <div className="mb-3 text-sm text-red-400 flex items-center">
+                <span className="mr-1">*</span>
+                This field is required
+              </div>
+            )}
             {renderQuestion(DIETARY_ALLERGIES_QUESTION)}
           </div>
         );
@@ -154,7 +271,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
     <>
       <style>{`
         html {
-          background-color: #284B63 !important;
+          background-color: #242331 !important;
           min-height: 100%;
           overscroll-behavior: none;
         }
@@ -162,7 +279,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         body {
           overflow-x: hidden;
           max-width: 100vw;
-          background-color: #284B63 !important;
+          background-color: #242331 !important;
           min-height: 100vh;
           margin: 0;
           padding: 0;
@@ -172,7 +289,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         }
         
         #root {
-          background-color: #284B63;
+          background-color: #242331;
           height: 100vh;
           overflow-y: auto;
           overflow-x: hidden;
@@ -220,7 +337,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         }
         
         .animated-bg {
-          background: linear-gradient(-45deg, #242331, #284B63, #242331, #284B63);
+          background: linear-gradient(-45deg, #242331, #1d4763ff, #242331, #18415dff);
           background-size: 400% 400%;
           animation: gradientShift 15s ease infinite;
         }
@@ -377,7 +494,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
       <div className="min-h-screen animated-bg">
         {/* Enhanced Progress Bar at Top */}
         <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="h-2 bg-gray-800/80 backdrop-blur-sm border-b border-white/10">
+          <div className="h-1 bg-gray-800/80 backdrop-blur-sm border-b border-white/10">
             <div 
               className="h-full bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 shadow-lg shadow-blue-500/30 transition-all duration-500 ease-out glow-effect"
               style={{ width: `${getProgress()}%` }}
@@ -386,30 +503,19 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         </div>
 
         {/* Header with Progress */}
-        <div className="pt-12 px-4 pb-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="pt-6 px-4 pb-6">
+          <div className="flex items-center justify-between mb-6">
             <button
               onClick={handleBack}
-              className="flex items-center text-gray-300 hover:text-white transition-all duration-300 transform touch-feedback px-3 py-2 rounded-lg glass-morphism"
+              className="flex items-center justify-center w-10 h-10 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200"
             >
-              <span className="text-lg mr-1">←</span>
-              <span className="text-sm">Back</span>
+              <span className="text-xl">←</span>
             </button>
-            <div className="flex-1 mx-4">
-              <div className="h-2 bg-gray-800/80 backdrop-blur-sm border border-white/10 rounded-full p-1">
-                <div 
-                  className="bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 h-full rounded-full transition-all duration-300 glow-effect"
-                  style={{ width: `${getProgress()}%` }}
-                />
-              </div>
-            </div>
-            <div className="text-sm text-gray-300">
-              {currentGoalIndex + 1} of {totalGoals}
-            </div>
+            <div className="w-10" />
           </div>
 
           {/* Goal Header */}
-          <div className="text-center mb-8">
+          <div className="text-center">
             <div className="text-4xl mb-3 floating-element">{currentGoalQuestions.icon}</div>
             <h1 className="text-2xl font-bold text-white mb-2 slide-in-up">
               {currentGoalQuestions.title}
@@ -423,45 +529,45 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         {/* Questions Section */}
         <div className="px-4 mb-8">
           <div className="space-y-8">
-            {currentGoalQuestions.questions.map((question, index) => (
-              <div key={question.id} className="question-card rounded-2xl p-6 fade-in-stagger" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="flex items-center mb-4">
-                  <span className="text-2xl mr-3">{question.icon}</span>
-                  <h3 className="text-lg font-semibold text-white">
-                    {question.question}
-                  </h3>
-                  {question.required && (
-                    <span className="ml-2 text-red-400 text-sm">*</span>
+            {currentGoalQuestions.questions.map((question, index) => {
+              const isAnswered = isQuestionAnswered(question.id);
+              const showWarning = question.required && !isAnswered && showValidationErrors;
+              
+              return (
+                <div 
+                  key={question.id} 
+                  data-question-id={question.id}
+                  className={`question-card rounded-2xl p-6 fade-in-stagger ${showWarning ? 'border-red-400/50 bg-red-500/5' : ''}`} 
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="flex items-center mb-4">
+                    <span className="text-2xl mr-3">{question.icon}</span>
+                    <h3 className="text-lg font-semibold text-white">
+                      {question.question}
+                    </h3>
+                  </div>
+                  {showWarning && (
+                    <div className="mb-3 text-sm text-red-400 flex items-center">
+                      <span className="mr-1">*</span>
+                      This field is required
+                    </div>
                   )}
+                  {renderQuestion(question)}
                 </div>
-                {renderQuestion(question)}
-              </div>
-            ))}
+              );
+            })}
             {renderConditionalAllergiesQuestion()}
           </div>
         </div>
 
         {/* Navigation */}
-        <div className="px-4 pb-8">
+        <div className="px-4 pb-8" data-navigation>
           <div className="flex gap-3">
-            {currentGoalIndex > 0 && (
-              <button
-                onClick={goToPreviousGoal}
-                className="flex-1 py-4 px-6 glass-morphism text-gray-300 rounded-xl font-semibold hover:text-white transition-all duration-300 touch-feedback"
-              >
-                Previous
-              </button>
-            )}
             <button
               onClick={handleNext}
-              disabled={!canProceedToNext(currentGoal)}
-              className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 touch-feedback ${
-                canProceedToNext(currentGoal)
-                  ? 'glass-morphism-selected text-white glow-effect hover:brightness-110'
-                  : 'glass-morphism text-gray-500 cursor-not-allowed opacity-50'
-              }`}
+              className="w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 touch-feedback glass-morphism-selected text-white glow-effect hover:brightness-110"
             >
-              {canFinish() ? 'Get Recommendations' : 'Next'}
+              {totalGoals === 1 || canFinish() ? 'Get Recommendations' : 'Next'}
             </button>
           </div>
         </div>
