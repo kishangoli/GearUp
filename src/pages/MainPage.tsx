@@ -161,7 +161,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
     <>
       <style>{`
         html {
-          background-color: #284B63 !important;
+          background-color: #242331 !important;
           min-height: 100%;
           overscroll-behavior: none;
         }
@@ -169,7 +169,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         body {
           overflow-x: hidden;
           max-width: 100vw;
-          background-color: #284B63 !important;
+          background-color: #242331 !important;
           min-height: 100vh;
           margin: 0;
           padding: 0;
@@ -179,7 +179,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         }
         
         #root {
-          background-color: #284B63;
+          background-color: #242331;
           height: 100vh;
           overflow-y: auto;
           overflow-x: hidden;
@@ -250,6 +250,8 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
           position: relative;
           overflow: hidden;
           transition: all 0.3s ease;
+          transform: scale(1.0);
+          margin: 4px;
         }
         
         .glass-morphism::before {
@@ -283,6 +285,9 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
           box-shadow: 
             0 8px 32px rgba(59, 130, 246, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          transform: scale(1.05);
+          margin: 4px;
+          z-index: 10;
         }
         
         .glass-morphism-selected::before {
@@ -298,15 +303,15 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
           animation: slideInUp 0.6s ease-out forwards;
         }
         
-        .fade-in-stagger {
-          opacity: 0;
-          animation: fadeInUp 0.8s ease-out forwards;
-        }
+        // .fade-in-stagger {
+        //   opacity: 0;
+        //   animation: fadeInUp 0.8s ease-out forwards;
+        // }
         
-        .stagger-animation {
-          opacity: 0;
-          animation: fadeInUp 0.8s ease-out forwards;
-        }
+        // .stagger-animation {
+        //   opacity: 0;
+        //   animation: fadeInUp 0.8s ease-out forwards;
+        // }
         
         .stagger-1 { animation-delay: 0.1s; }
         .stagger-2 { animation-delay: 0.2s; }
@@ -438,7 +443,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         <div className="flex-1 flex flex-col min-h-0">
 
         {/* Header Section with Back Button */}
-        <div className="px-4 pt-3 pb-1">
+        <div className="px-4 pt-8 pb-1">
           <div className="flex items-center justify-between mb-1">
             <button
               onClick={onBack}
@@ -465,17 +470,17 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         </div>
 
         {/* Goals Selection Section */}
-        <div className="px-4 mb-2 flex-1">
+        <div className="px-4 mb-4 mt-2 flex-1">
           <h2 className={`text-xl font-semibold text-gray-200 mb-3 ${isLoaded ? 'slide-in-up' : ''}`} style={{ animationDelay: '0.3s' }}>
             Pick your goal(s)
           </h2>
-          <div className="goal-grid grid grid-cols-2 gap-2 mb-4">
+          <div className="goal-grid grid grid-cols-2 gap-4 mb-4">
             {FITNESS_GOALS.map((goal, index) => (
               <button
                 key={goal.id}
                 ref={(el) => observeElement(el, `goal-${goal.id}`)}
                 onClick={() => handleGoalToggle(goal.id)}
-                className={`p-6 rounded-2xl transition-all duration-300 transform touch-feedback relative scroll-reveal shimmer-on-scroll ${
+                className={`p-4 rounded-2xl transition-all duration-300 transform touch-feedback relative scroll-reveal shimmer-on-scroll ${
                   visibleElements.has(`goal-${goal.id}`) ? 'visible' : ''
                 } ${
                   isGoalSelected(goal.id)
@@ -502,16 +507,16 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         
         {/* Fixed Action Button at Bottom - Only show when goals are selected */}
         {selections.goals.length > 0 && (
-          <div className="px-4 -mt-6 mb-9">
+          <div className="px-4 mt-0 mb-4">
             <Button
               onClick={handleGetRecommendations}
               borderRadius="1rem"
               duration={4000}
               containerClassName="h-16 p-[1px] w-full"
               borderClassName="opacity-70 bg-gradient-to-r from-blue-400 to-purple-500"
-              className={`rounded-2xl bg-transparent font-semibold transition-all duration-300 transform touch-feedback relative overflow-hidden ${
+              className={`rounded-2xl bg-slate-800 font-semibold transition-all duration-300 transform touch-feedback relative overflow-hidden ${
                 isCompactView ? 'text-base' : 'text-lg'
-              } glass-morphism-selected text-white`}
+              } text-white border border-blue-500/30`}
             >
               <div className="relative z-10">
                 Continue to Questions

@@ -1,5 +1,7 @@
 import React from "react";
 import { useProductSearch, ProductCard } from "@shopify/shop-minis-react";
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserAnswers } from "../context/UserAnswersContext";
@@ -59,8 +61,55 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
   }, [promptsKey, answers]);
 
   return (
+    <>
+      <style>{`
+        /* More comprehensive ProductCard text color overrides */
+        .shopify-product-card *,
+        .shopify-product-card h1,
+        .shopify-product-card h2,
+        .shopify-product-card h3,
+        .shopify-product-card h4,
+        .shopify-product-card h5,
+        .shopify-product-card h6,
+        .shopify-product-card p,
+        .shopify-product-card span,
+        .shopify-product-card div,
+        .shopify-product-card .product-title,
+        .shopify-product-card [class*="title"],
+        .shopify-product-card [class*="name"],
+        .shopify-product-card [class*="text"],
+        .shopify-product-card [class*="label"],
+        [data-testid*="product"] *,
+        [class*="product-card"] *,
+        [class*="ProductCard"] * {
+          color: white !important;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+        }
+        
+        /* Specific price styling */
+        .shopify-product-card .price,
+        .shopify-product-card [class*="price"],
+        .shopify-product-card [class*="Price"],
+        [data-testid*="price"] *,
+        [class*="product-card"] [class*="price"] * {
+          color: #10b981 !important;
+          font-weight: 600 !important;
+        }
+        
+        /* Force all text content to be white */
+        .embla__slide * {
+          color: white !important;
+        }
+        
+        /* Override any inherited dark colors */
+        .embla__slide h1, .embla__slide h2, .embla__slide h3, 
+        .embla__slide h4, .embla__slide h5, .embla__slide h6,
+        .embla__slide p, .embla__slide span, .embla__slide div {
+          color: white !important;
+        }
+      `}</style>
 
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pb-20">
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 pb-20">
       {/* GLOBAL TOAST (top-center) */}
       <AnimatePresence>
         {addedToast && (
@@ -83,10 +132,9 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
       <div className="pt-12 px-4 pb-6 flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center text-white/80 hover:text-white transition-colors"
+          className="flex items-center justify-center w-10 h-10 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200"
         >
-          <span className="text-lg mr-1">←</span>
-          <span className="text-sm">Back</span>
+          <span className="text-xl">←</span>
         </button>
         <h1 className="text-2xl font-bold text-white">Your Recommendations</h1>
         <div className="w-10" />
@@ -96,7 +144,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           {loading && <SkeletonSection />}
 
           {!loading && plan && plan.prompts.length === 0 && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 text-white/80">
+            <div className="bg-slate-700/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-600/30 text-gray-300">
               No prompts yet. Try adjusting your answers.
             </div>
           )}
@@ -114,12 +162,12 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
       </div>
 
       {(items.length > 0 || footerCta) && (
-        <div className="fixed left-0 right-0 bottom-0 px-4 pb-4 pt-2 bg-gradient-to-t from-indigo-100/80 via-indigo-100/30 to-transparent backdrop-blur">
+        <div className="fixed left-0 right-0 bottom-0 px-4 pb-4 pt-2 bg-gradient-to-t from-slate-900/90 via-slate-800/50 to-transparent backdrop-blur">
           <div className="flex gap-2">
             {onViewVisionBoard && items.length > 0 && (
               <button
                 onClick={onViewVisionBoard}
-                className="flex-1 h-12 rounded-xl bg-indigo-600 text-white font-medium shadow hover:bg-indigo-700 active:bg-indigo-800 transition-colors"
+                className="flex-1 h-12 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 active:bg-blue-800 transition-colors"
               >
                 View vision board ({items.length})
               </button>
@@ -127,7 +175,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
             {footerCta && (
               <button
                 onClick={footerCta.onClick}
-                className="h-12 px-4 rounded-xl border border-gray-300 bg-white text-gray-900 font-medium shadow-sm hover:bg-gray-50"
+                className="h-12 px-4 rounded-xl border border-slate-600 bg-slate-700 text-gray-300 font-medium shadow-sm hover:bg-slate-600"
               >
                 {footerCta.label}
               </button>
@@ -136,6 +184,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         </div>
       )}
     </div>
+    </>
   );
 };
 
@@ -146,7 +195,17 @@ const PromptRow: React.FC<{
   blurb?: string;
   onAnyItemAdded: () => void; // NEW
 }> = ({ prompt, blurb, onAnyItemAdded }) => {
-  const raw: any = useProductSearch({ query: prompt.query, first: 6 });
+  const raw: any = useProductSearch({ query: prompt.query, first: 8 });
+
+  const [emblaRef] = useEmblaCarousel(
+    { 
+      loop: true,
+      align: 'start',
+      containScroll: 'trimSnaps',
+      dragFree: true
+    },
+    [Autoplay({ delay: 3000, stopOnInteraction: false })]
+  );
 
   const isLoading =
     typeof raw?.isLoading === "boolean" ? raw.isLoading :
@@ -181,21 +240,21 @@ const PromptRow: React.FC<{
   const fallbackBlurb = `Curated picks to help you shop ${prompt.label.toLowerCase()}.`;
 
   return (
-    <section className="bg-white rounded-2xl p-6 shadow-lg">
+    <section className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/20 ring-1 ring-white/10">
 
-      <h2 className="text-lg font-semibold text-gray-800">{prompt.label}</h2>
+      <h2 className="text-lg font-semibold text-white">{prompt.label}</h2>
 
       {blurb === "__loading__" ? (
-        <div className="h-3 w-52 bg-gray-200 rounded mt-2 mb-3 animate-pulse" />
+        <div className="h-3 w-52 bg-slate-600 rounded mt-2 mb-6 animate-pulse" />
       ) : (
-        <p className="text-xs text-gray-600 mt-1 mb-3">{blurb || fallbackBlurb}</p>
+        <p className="text-sm text-gray-300 mt-1 mb-6">{blurb || fallbackBlurb}</p>
       )}
 
       <p className="sr-only">
         Query: <span className="font-mono">{prompt.query}</span>
       </p>
 
-      {isLoading && <SkeletonGrid />}
+      {isLoading && <SkeletonCarousel />}
 
       {!isLoading && error && (
         <div className="text-sm text-red-600 border border-red-200 bg-red-50 rounded-xl p-3">
@@ -204,44 +263,41 @@ const PromptRow: React.FC<{
       )}
 
       {!isLoading && !error && (
-
-        <motion.div
-          layout
-          className="grid grid-cols-2 gap-3"
-          transition={{ layout: { type: "spring", stiffness: 500, damping: 40, mass: 0.8 } }}
-        >
-          <AnimatePresence>
-            {products.map((prod, i) => {
-              const key = idOf(prod, i);
-              return (
-                <motion.div
-                  key={key}
-                  layout
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -16, scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 520, damping: 36, mass: 0.8 }}
-                >
-                  <LongPressToAdd
-                    product={prod}
-                    onAdded={() => {
-                      removeById(key);
-                      onAnyItemAdded(); // <-- trigger global toast
-                    }}
+        <div className="embla overflow-hidden" ref={emblaRef}>
+          <div className="embla__container flex gap-3">
+            <AnimatePresence>
+              {products.map((prod, i) => {
+                const key = idOf(prod, i);
+                return (
+                  <motion.div
+                    key={key}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -16, scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 520, damping: 36, mass: 0.8 }}
+                    className="embla__slide flex-[0_0_50%] min-w-0"
                   >
-                    <ProductCard product={prod} />
-                  </LongPressToAdd>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                    <LongPressToAdd
+                      product={prod}
+                      onAdded={() => {
+                        removeById(key);
+                        onAnyItemAdded(); // <-- trigger global toast
+                      }}
+                    >
+                      <ProductCard product={prod} />
+                    </LongPressToAdd>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
 
-          {products.length === 0 && (
-            <div className="col-span-2 text-sm text-gray-500 border border-gray-200 rounded-xl p-4">
-              No results matched this query.
-            </div>
-          )}
-        </motion.div>
+            {products.length === 0 && (
+              <div className="w-full text-sm text-gray-400 border border-slate-600 bg-slate-800/50 rounded-xl p-4">
+                No results matched this query.
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </section>
   );
@@ -250,16 +306,16 @@ const PromptRow: React.FC<{
 /* ----------------------------- Skeletons ----------------------------- */
 
 const SkeletonSection = () => (
-    <div className="bg-white rounded-2xl p-6 shadow-lg">
-      <div className="animate-pulse h-5 w-40 bg-gray-200 rounded mb-4" />
-      <SkeletonGrid />
+    <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/20 ring-1 ring-white/10">
+      <div className="animate-pulse h-5 w-40 bg-slate-600 rounded mb-4" />
+      <SkeletonCarousel />
     </div>
   );
   
-const SkeletonGrid = () => (
-<div className="grid grid-cols-2 gap-3">
-    {Array.from({ length: 6 }).map((_, i) => (
-    <div key={i} className="h-44 rounded-xl bg-white/60 border border-gray-200 animate-pulse" />
+const SkeletonCarousel = () => (
+  <div className="flex gap-3 overflow-hidden">
+    {Array.from({ length: 4 }).map((_, i) => (
+      <div key={i} className="flex-[0_0_50%] h-44 rounded-xl bg-slate-700/60 border border-slate-600 animate-pulse" />
     ))}
-</div>
+  </div>
 );

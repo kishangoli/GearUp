@@ -154,7 +154,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
     <>
       <style>{`
         html {
-          background-color: #284B63 !important;
+          background-color: #242331 !important;
           min-height: 100%;
           overscroll-behavior: none;
         }
@@ -162,7 +162,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         body {
           overflow-x: hidden;
           max-width: 100vw;
-          background-color: #284B63 !important;
+          background-color: #242331 !important;
           min-height: 100vh;
           margin: 0;
           padding: 0;
@@ -172,7 +172,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         }
         
         #root {
-          background-color: #284B63;
+          background-color: #242331;
           height: 100vh;
           overflow-y: auto;
           overflow-x: hidden;
