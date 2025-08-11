@@ -470,7 +470,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
 
         {/* Goals Selection Section */}
         <div className="px-4 mb-4 mt-2 flex-1">
-          <h2 className={`text-xl font-semibold text-gray-200 mb-3 ${isLoaded ? 'slide-in-up' : ''}`} style={{ animationDelay: '0.3s' }}>
+          <h2 className={`text-xl font-semibold text-gray-200 mb-3 text-center ${isLoaded ? 'slide-in-up' : ''}`} style={{ animationDelay: '0.3s' }}>
             Pick your goal(s)
           </h2>
           <div className="goal-grid grid grid-cols-2 gap-4 mb-4">
