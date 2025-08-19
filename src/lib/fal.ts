@@ -102,12 +102,10 @@ Return JSON only.
         .filter((p: any) => p && typeof p.label === "string" && typeof p.query === "string")
         .slice(0, 6);
     }
-  } catch {
-    // Fallback so UI still works if JSON parse fails
-    plan.prompts = (answers.goals || []).slice(0, 3).map((g) => ({
-      label: `${String(g).charAt(0).toUpperCase() + String(g).slice(1)} picks`,
-      query: `${String(g)} essentials`,
-    }));
+  } catch (e) {
+    console.error("Failed to parse search plan from LLM:", e);
+    // Re-throw the error so the UI layer can handle it.
+    throw new Error("Failed to generate a search plan. Please try again.");
   }
 
   return plan;
@@ -219,11 +217,13 @@ ${JSON.stringify(context ?? {}, null, 2)}
       }));
       return { tips };
     }
-  } catch {
-    // fall through to fallback
+  } catch (e) {
+    console.error("Failed to parse cart tips from LLM:", e);
+    // Re-throw the error so the UI layer can handle it.
+    throw new Error("Failed to generate tips for your items. Please try again.");
   }
 
-  // Safe fallback: one generic usage tip per first few items
+  // This fallback is now unreachable if an error occurs, which is intended.
   return {
     tips: cart.slice(0, 3).map((c) => ({
       title: `How to use ${c.title}`,
@@ -304,8 +304,10 @@ ${JSON.stringify(answers ?? {}, null, 2)}
         }
       }
     }
-  } catch {
-    // noop — we’ll fill fallbacks below
+  } catch (e) {
+    console.error("Failed to parse prompt blurbs from LLM:", e);
+    // Do not throw here, as blurbs are non-essential.
+    // A fallback will be generated, which is acceptable.
   }
 
   // Fallback: deterministic, non-AI blurbs so the UI always has copy

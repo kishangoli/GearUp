@@ -61,10 +61,14 @@ export const TipsPage: React.FC<TipsPageProps> = ({ onBack, context, onBrowseMor
     (async () => {
       try {
         setGenLoading(true);
+        setGenError(null); // Clear previous errors
         const t = await buildCartTipsClient(items, context);
         if (!cancelled) setTips(t);
-      } catch {
-        if (!cancelled) setGenError("Couldn’t generate tips right now.");
+      } catch (e: any) {
+        if (!cancelled) {
+          setGenError(e.message || "Couldn’t generate tips right now.");
+          setTips(null); // Ensure no stale tips are shown
+        }
       } finally {
         if (!cancelled) setGenLoading(false);
       }

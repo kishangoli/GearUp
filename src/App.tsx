@@ -43,6 +43,7 @@ type Page =
 export const App: React.FC = () => {
   const [page, setPage] = useState<Page>("opener");
   const [plan, setPlan] = useState<{ prompts: { label: string; query: string }[] } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // ✅ guard answers so we never crash on cold boot
   const ua = useUserAnswers();
@@ -53,9 +54,11 @@ export const App: React.FC = () => {
     try {
       const built = await buildSearchPlanClient(answers);
       setPlan(built);
-    } catch (e) {
+      setError(null); // Clear any previous errors
+    } catch (e: any) {
       console.error("Failed to build search plan:", e);
-      setPlan({ prompts: [] });
+      setError(e.message || "An unexpected error occurred. Please try again.");
+      setPlan({ prompts: [] }); // Ensure plan is not null
     } finally {
       setPage("recommendations");
     }
@@ -120,7 +123,24 @@ export const App: React.FC = () => {
   return (
     <ErrorBoundary>
       {content}
-      
+      {error && (
+        <div 
+          style={{ 
+            position: 'fixed', 
+            bottom: '20px', 
+            left: '50%', 
+            transform: 'translateX(-50%)', 
+            backgroundColor: 'red', 
+            color: 'white', 
+            padding: '10px 20px', 
+            borderRadius: '8px', 
+            zIndex: 1000 
+          }}
+          onClick={() => setError(null)}
+        >
+          {error}
+        </div>
+      )}
     </ErrorBoundary>
   );
 };
