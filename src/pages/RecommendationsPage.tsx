@@ -89,6 +89,23 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
   const [showNumberSpam, setShowNumberSpam] = React.useState(false);
   const [numbers, setNumbers] = React.useState<Array<{ id: number; x: number; y: number; number: string }>>([]);
 
+  // ---------- long press announcement ----------
+  const [showLongPressAnnouncement, setShowLongPressAnnouncement] = React.useState(false);
+
+  // Show announcement on first visit
+  React.useEffect(() => {
+    const hasSeenAnnouncement = localStorage.getItem('hasSeenLongPressAnnouncement');
+    
+    if (!hasSeenAnnouncement && !loading && plan?.prompts?.length) {
+      // Set localStorage immediately to prevent multiple triggers
+      localStorage.setItem('hasSeenLongPressAnnouncement', 'true');
+      
+      setTimeout(() => {
+        setShowLongPressAnnouncement(true);
+      }, 1000); // Show after 1 second delay
+    }
+  }, [loading, plan]);
+
   const triggerNumberSpam = React.useCallback(() => {
     setShowNumberSpam(true);
     
@@ -488,6 +505,85 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           </div>
         );
       })}
+
+      {/* Long Press Announcement Modal */}
+      <AnimatePresence>
+        {showLongPressAnnouncement && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 300, 
+                damping: 25,
+                delay: 0.1 
+              }}
+              className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl max-w-sm w-full p-6 text-center"
+            >
+              {/* Animated Icon */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 200, 
+                  delay: 0.3 
+                }}
+                className="mb-4"
+              >
+                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                  <img
+                    src="https://archive.org/download/press-icon/Press%20Icon.png"
+                    alt="Press icon"
+                    className="w-8 h-8 object-contain filter brightness-0 invert"
+                  />
+                </div>
+              </motion.div>
+
+              {/* Title */}
+              <motion.h3 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-xl font-bold text-white mb-2"
+              >
+                Long Press to Add!
+              </motion.h3>
+
+              {/* Description */}
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="text-gray-300 text-sm mb-6 leading-relaxed"
+              >
+                Hold down on any product to watch it fly to your gear collection! 
+              </motion.p>
+
+              {/* Action Button */}
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                onClick={() => setShowLongPressAnnouncement(false)}
+                className="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 active:scale-95"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Got it! Let's shop
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Easter Egg Number Spam */}
       {showNumberSpam && (

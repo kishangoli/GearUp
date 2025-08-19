@@ -9,7 +9,7 @@ type Props = {
   title?: string;     // optional override
 };
 
-export default function VisionBoardWarmupPage({ onDone, onBack, title = "Getting your board ready…" }: Props) {
+export default function VisionBoardWarmupPage({ onDone, onBack, title = "Getting your gear ready…" }: Props) {
   const { items } = useVisionBoard();
 
   const [progress, setProgress] = React.useState({ done: 0, total: items.length });
