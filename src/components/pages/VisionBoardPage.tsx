@@ -1,10 +1,10 @@
 import React from "react";
-import SwipeStack from "../components/ui/SwipeStack";
+import SwipeStack from "../ui/SwipeStack";
 import { useVisionBoard } from "../context/VisionBoardContext";
 import { useShopCartActions } from "@shopify/shop-minis-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { buildCartTipsClient } from "../lib/fal";
-import { tipsCache } from "../state/tipsCache";           // shared cache filled by Warmup
+import { buildCartTipsClient } from "../fal-usage/fal";
+import { tipsCache } from "../../cache/tipsCache";           // shared cache filled by Warmup
 import { inferCategory } from "../utils/tipsPrefetch";     // same rules as warmup
 import {Toaster, toast} from "sonner";
 

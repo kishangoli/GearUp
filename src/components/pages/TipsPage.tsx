@@ -2,7 +2,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSavedProducts } from "@shopify/shop-minis-react";
-import { buildCartTipsClient, type CartItemInput, type CartTips } from "../lib/fal";
+import { buildCartTipsClient, type CartItemInput, type CartTips } from "../fal-usage/fal";
 
 type TipsPageProps = {
   onBack: () => void;

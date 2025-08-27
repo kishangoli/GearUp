@@ -1,5 +1,6 @@
 {
-  "name": "testMini",
+  "name": "GearUp",
+  "description": "",
   "permissions": [],
   "privacy_policy_url": "https://example.com/privacy",
   "terms_url": "https://example.com/terms",
@@ -7,5 +8,5 @@
     "queue.fal.run",
     "fal.run"
   ],
-  "handle": "testmini"
+  "handle": "GearUp"
 }

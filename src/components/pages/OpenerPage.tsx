@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from "../components/ui/moving-border";
-import LightRays from '../components/ui/LightRays';
+import { Button } from "../ui/moving-border";
+import LightRays from '../ui/LightRays';
 
 interface OpenerPageProps {
   onGetStarted: () => void;
@@ -26,7 +26,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       {/* title */}
       <div className="flex-1 flex items-center justify-center -mt-40">
         <img 
-          src="https://archive.org/download/gearupfinal/gearupfinal.gif" 
+          src="https://archive.org/download/gearupfinal/gearupfinal.gif"
           alt="Gear Up Logo" 
           className="h-90 w-auto" 
         />

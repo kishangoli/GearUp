@@ -6,9 +6,9 @@ import { useLongPress } from "use-long-press";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserAnswers } from "../context/UserAnswersContext";
-import { generatePromptBlurbsClient } from "../lib/fal";
+import { generatePromptBlurbsClient } from "../fal-usage/fal";
 import { useVisionBoard } from "../context/VisionBoardContext";
-import LongPressToAdd from "../components/ui/LongPressToAdd";
+import LongPressToAdd from "../ui/LongPressToAdd";
 
 type Prompt = { label: string; query: string };
 

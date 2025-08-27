@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { OpenerPage } from "./pages/OpenerPage";
-import { MainPage } from "./pages/MainPage";
-import { FollowUpQuestionsPage } from "./pages/FollowUpQuestionsPage";
-import { RecommendationsPage } from "./pages/RecommendationsPage";
-import { LoadingPage } from "./pages/LoadingPage";
-import { TipsPage } from "./pages/TipsPage";
-import VisionBoardPage from "./pages/VisionBoardPage";
-import VisionBoardWarmupPage from "./pages/VisionBoardWarmupPage";
-import { useUserAnswers } from "./context/UserAnswersContext";
-import { buildSearchPlanClient } from "./lib/fal";
+import { OpenerPage } from "./components/pages/OpenerPage";
+import { MainPage } from "./components/pages/MainPage";
+import { FollowUpQuestionsPage } from "./components/pages/FollowUpQuestionsPage";
+import { RecommendationsPage } from "./components/pages/RecommendationsPage";
+import { LoadingPage } from "./components/pages/LoadingPage";
+import { TipsPage } from "./components/pages/TipsPage";
+import VisionBoardPage from "./components/pages/VisionBoardPage";
+import VisionBoardWarmupPage from "./components/pages/VisionBoardWarmupPage";
+import { useUserAnswers } from "./components/context/UserAnswersContext";
+import { buildSearchPlanClient } from "./components/fal-usage/fal";
 
 /* ---------------- Error Boundary (shows errors instead of white screen) --------------- */
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: any }> {
