@@ -10,6 +10,7 @@ import VisionBoardWarmupPage from "./components/pages/VisionBoardWarmupPage";
 import { useUserAnswers } from "./components/context/UserAnswersContext";
 import { buildSearchPlanClient } from "./components/fal-usage/fal";
 
+
 /* ---------------- Error Boundary (shows errors instead of white screen) --------------- */
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: any }> {
   state = { error: null as any };
