@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { FollowUpAnswers, GoalFollowUpData } from '../types/followUpQuestions';
 import { FitnessGoal } from '../types/fitness';
-import { FOLLOW_UP_QUESTIONS, DIETARY_ALLERGIES_QUESTION } from '../constants/followUpQuestions';
+import { FOLLOW_UP_QUESTIONS, DIETARY_ALLERGIES_QUESTION } from '../label-data/followUpQuestions';
 
 export const useFollowUpQuestions = (selectedGoals: FitnessGoal[]) => {
   const [answers, setAnswers] = useState<GoalFollowUpData>({});

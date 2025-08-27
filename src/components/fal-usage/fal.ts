@@ -1,17 +1,6 @@
 // src/lib/fal.ts
-import { fal } from "@fal-ai/client";
 import type { UserAnswers } from "../types/answers";
-import { preprocessAnswers } from "../lib/preprocess";
-
-
-/**
- * TEMP (dev/hackathon): keep the key here.
- * For production, move this server-side.
- */
-fal.config({
-  // Use ONE string: either your fal_live_... token OR "<KEY_ID>:<SECRET>"
-  credentials: "1944d3d5-e4ee-4e3f-bc99-3ff9b5661887:61bb8745eb3053d86ef3b61ba09a51e0",
-});
+import { preprocessAnswers } from "./preprocess";
 
 /* -------------------------------------------------------------------------- */
 /*                           SEARCH PLAN (EXISTING)                           */
@@ -29,14 +18,13 @@ export interface SearchPlan {
 }
 
 /**
- * Turn the user's answers into 3–6 focused search prompts using FAL.
+ * Turn the user's answers into 3–6 focused search prompts using the backend server.
  * Each prompt becomes one horizontal row on the Recommendations page.
  */
 export async function buildSearchPlanClient(answers: UserAnswers): Promise<SearchPlan> {
-  // ✅ Step 2: run preprocessing before using answers in prompt
   const cleanAnswers = preprocessAnswers(answers);
 
- const prompt = `
+  const prompt = `
 You are a product search planner for a fitness & nutrition Shopify store.
 
 TASK:
@@ -61,12 +49,10 @@ GENERAL RULES:
 - Do not recommend large scale items (e.g. gym equipment) unless explicitly mentioned.
 - Make sure to not recommend items which may be better suited for a different goal. (i.e. don't recommend running shoes for strength training or foam rollers for sports)
 - Make sure to adhere to the user's dietary preferences and allergies.
-- Make sure to not reccomend items which may be meant for a different skill level than the user selected. (i.e. don't recommend advanced supplements for a beginner or beginner-friendly items for an advanced user)
-- 
+- Make sure to not recommend items which may be meant for a different skill level than the user selected. (i.e. don't recommend advanced supplements for a beginner or beginner-friendly items for an advanced user)
 
 UserAnswers:
 ${JSON.stringify(cleanAnswers)}
-
 
 GOAL-SPECIFIC INSTRUCTIONS:
 - strength: Focus on training equipment, progressive overload tools, workout apparel, and supplements aligned with the user's training focus.
@@ -77,34 +63,34 @@ GOAL-SPECIFIC INSTRUCTIONS:
 Return JSON only.
 `.trim();
 
+  console.log("Prompt being sent to backend:", prompt);
 
-  const { data } = await fal.run("fal-ai/any-llm", {
-    input: {
-      model: "openai/gpt-4o-mini", // vendor-prefixed model name
-      prompt,
-      format: "json",
-      temperature: 0.2,
+  // Call the backend server
+  const response = await fetch("https://backend-448821269912.us-central1.run.app/handleFalRequest", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({ prompt }),
   });
 
-  // Normalize to a string we can JSON.parse
-  const raw =
-    (data as any)?.output ??
-    (data as any)?.output?.content ??
-    (typeof data === "string" ? data : "");
+  if (!response.ok) {
+    throw new Error("Failed to call backend server");
+  }
+
+  const { output } = await response.json();
 
   let plan: SearchPlan = { prompts: [] };
 
   try {
-    const parsed = JSON.parse(String(raw));
+    const parsed = JSON.parse(String(output));
     if (Array.isArray(parsed?.prompts)) {
       plan.prompts = parsed.prompts
         .filter((p: any) => p && typeof p.label === "string" && typeof p.query === "string")
         .slice(0, 6);
     }
   } catch (e) {
-    console.error("Failed to parse search plan from LLM:", e);
-    // Re-throw the error so the UI layer can handle it.
+    console.error("Failed to parse search plan from backend:", e);
     throw new Error("Failed to generate a search plan. Please try again.");
   }
 
@@ -189,20 +175,25 @@ Context:
 ${JSON.stringify(context ?? {}, null, 2)}
 `.trim();
 
-  const { data } = await fal.run("fal-ai/any-llm", {
-    input: {
-      model: "openai/gpt-4o-mini",
-      prompt,
-      format: "json",
-      temperature: 0.2,
-      max_output_tokens: 900,
+  // Call the backend server
+  const response = await fetch("https://backend-448821269912.us-central1.run.app/handleFalRequest", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({ prompt }),
   });
 
+  if (!response.ok) {
+    throw new Error("Failed to call backend server");
+  }
+
+  const { output } = await response.json();
+
   const raw =
-    (data as any)?.output ??
-    (data as any)?.output?.content ??
-    (typeof data === "string" ? data : "");
+    (output as any)?.output ??
+    (output as any)?.output?.content ??
+    (typeof output === "string" ? output : "");
 
   try {
     const parsed = JSON.parse(String(raw));
@@ -218,12 +209,11 @@ ${JSON.stringify(context ?? {}, null, 2)}
       return { tips };
     }
   } catch (e) {
-    console.error("Failed to parse cart tips from LLM:", e);
-    // Re-throw the error so the UI layer can handle it.
+    console.error("Failed to parse cart tips from backend:", e);
     throw new Error("Failed to generate tips for your items. Please try again.");
   }
 
-  // This fallback is now unreachable if an error occurs, which is intended.
+  // Fallback logic remains unchanged
   return {
     tips: cart.slice(0, 3).map((c) => ({
       title: `How to use ${c.title}`,
@@ -279,20 +269,25 @@ UserAnswers (context):
 ${JSON.stringify(answers ?? {}, null, 2)}
 `.trim();
 
-  const { data } = await fal.run("fal-ai/any-llm", {
-    input: {
-      model: "openai/gpt-4o-mini",
-      prompt,
-      format: "json",
-      temperature: 0.3,
-      max_output_tokens: 600,
+  // Call the backend server
+  const response = await fetch("https://backend-448821269912.us-central1.run.app/handleFalRequest", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({ prompt }),
   });
 
+  if (!response.ok) {
+    throw new Error("Failed to call backend server");
+  }
+
+  const { output } = await response.json();
+
   const raw =
-    (data as any)?.output ??
-    (data as any)?.output?.content ??
-    (typeof data === "string" ? data : "");
+    (output as any)?.output ??
+    (output as any)?.output?.content ??
+    (typeof output === "string" ? output : "");
 
   const out: Record<string, string> = {};
   try {
@@ -305,7 +300,7 @@ ${JSON.stringify(answers ?? {}, null, 2)}
       }
     }
   } catch (e) {
-    console.error("Failed to parse prompt blurbs from LLM:", e);
+    console.error("Failed to parse prompt blurbs from backend:", e);
     // Do not throw here, as blurbs are non-essential.
     // A fallback will be generated, which is acceptable.
   }

@@ -2,7 +2,7 @@
 import React from "react";
 import "animate.css";
 import { useLongPress } from "use-long-press";
-import { useVisionBoard } from "../../context/VisionBoardContext";
+import { useVisionBoard } from "../context/VisionBoardContext";
 
 type Props = {
   product: any;

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useFitnessSelections } from '../hooks/useFitnessSelections';
-import { FITNESS_GOALS } from '../constants/fitnessGoals';
+import { FITNESS_GOALS } from '../label-data/fitnessGoals';
 import { FitnessGoal, ExperienceLevel } from '../types/fitness';
 import { useUserAnswers } from '../context/UserAnswersContext';
-import { Button } from "../components/ui/moving-border";
+import { Button } from "../ui/moving-border";
 
 interface MainPageProps {
   onBack: () => void;

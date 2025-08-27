@@ -1,6 +1,6 @@
 // src/utils/tipsPrefetch.ts
-import { tipsCache, tipKeyOf } from "../state/tipsCache";
-import { buildCartTipsClient } from "../lib/fal";
+import { tipsCache, tipKeyOf } from "../../cache/tipsCache";
+import { buildCartTipsClient } from "../fal-usage/fal";
 
 // Category inference from productType/tags (same rules you use on the board)
 export function inferCategory(p: any):

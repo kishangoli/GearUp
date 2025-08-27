@@ -1,6 +1,6 @@
 import React from 'react';
 import { useFollowUpQuestions } from '../hooks/useFollowUpQuestions';
-import { FOLLOW_UP_QUESTIONS, DIETARY_ALLERGIES_QUESTION } from '../constants/followUpQuestions';
+import { FOLLOW_UP_QUESTIONS, DIETARY_ALLERGIES_QUESTION } from '../label-data/followUpQuestions';
 import { FitnessGoal } from '../types/fitness';
 import { useUserAnswers } from '../context/UserAnswersContext';
 
