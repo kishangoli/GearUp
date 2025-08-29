@@ -15,75 +15,59 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
   const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
   const [isCompactView, setIsCompactView] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const {
-    selections,
-    toggleGoal,
-    isGoalSelected
-  } = useFitnessSelections();
-
-  // NEW: context helpers to keep global answers in sync
+  const { selections, toggleGoal, isGoalSelected } = useFitnessSelections();
   const { updateGoals, updateExperience } = useUserAnswers();
+
+  // Define handleViewportChange at the top level
+  const handleViewportChange = () => {
+    const vh = window.visualViewport?.height || window.innerHeight;
+    const vw = window.visualViewport?.width || window.innerWidth;
+
+    const aspectRatio = vh / vw;
+    const isCompact = vh < 700 || aspectRatio < 1.5;
+
+    setIsCompactView(isCompact);
+  };
+
+  // Prevent unnecessary scrolling
+  const preventUnnecessaryScroll = () => {
+    const container = document.querySelector('.main-container') as HTMLElement;
+    if (container) {
+      if (selections.goals.length === 0) {
+        container.style.overflow = 'hidden';
+        return;
+      }
+
+      const contentHeight = container.scrollHeight;
+      const viewportHeight = window.innerHeight;
+
+      if (contentHeight <= viewportHeight) {
+        container.style.overflow = 'hidden';
+      } else {
+        container.style.overflowY = 'auto';
+        container.style.overflowX = 'hidden';
+      }
+    }
+  };
 
   // Page load animation and intersection observer setup
   useEffect(() => {
     setIsLoaded(true);
-    
-    // Set background color on document elements to prevent white flash
+
     document.documentElement.style.backgroundColor = '#284B63';
     document.body.style.backgroundColor = '#284B63';
-    
-    // Prevent unnecessary scrolling when content fits on screen
-    const preventUnnecessaryScroll = () => {
-      const container = document.querySelector('.main-container') as HTMLElement;
-      if (container) {
-        // Always disable scrolling until user selects at least one goal
-        if (selections.goals.length === 0) {
-          container.style.overflow = 'hidden';
-          return;
-        }
-        
-        const contentHeight = container.scrollHeight;
-        const viewportHeight = window.innerHeight;
-        
-        if (contentHeight <= viewportHeight) {
-          container.style.overflow = 'hidden';
-        } else {
-          container.style.overflowY = 'auto';
-          container.style.overflowX = 'hidden';
-        }
-      }
-    };
-    
-    // Call initially and on resize
-    setTimeout(preventUnnecessaryScroll, 100);
-    
-    // Viewport height detection and responsive layout
-        const handleViewportChange = () => {
-      const vh = window.visualViewport?.height || window.innerHeight;
-      const vw = window.visualViewport?.width || window.innerWidth;
-      
-      // Detect if we're in a compact view (shorter viewport or iPhone-like aspect ratio)
-      const aspectRatio = vh / vw;
-      const isCompact = vh < 700 || aspectRatio < 1.5;
-      
-      setIsCompactView(isCompact);
-      
-      // Check scroll necessity after layout changes
-      setTimeout(preventUnnecessaryScroll, 100);
-    };
 
     handleViewportChange();
     window.addEventListener('resize', handleViewportChange);
     window.addEventListener('orientationchange', handleViewportChange);
-    
-    // Set up intersection observer for mobile-friendly animations
+
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const elementId = entry.target.getAttribute('data-animate-id');
             if (elementId) {
-              setVisibleElements(prev => new Set([...prev, elementId]));
+              setVisibleElements((prev) => new Set([...prev, elementId]));
             }
           }
         });
@@ -100,6 +84,16 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
     };
   }, []);
 
+  // Sync selections → global store whenever user changes them
+  useEffect(() => {
+    updateGoals(selections.goals as FitnessGoal[]);
+    Object.entries(selections.experienceLevels).forEach(([goal, level]) => {
+      updateExperience(goal as FitnessGoal, level as ExperienceLevel);
+    });
+
+    setTimeout(preventUnnecessaryScroll, 100);
+  }, [selections.goals, selections.experienceLevels]);
+
   // Observe elements when they mount
   const observeElement = (element: HTMLElement | null, id: string) => {
     if (element && observerRef.current) {
@@ -107,38 +101,6 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
       observerRef.current.observe(element);
     }
   };
-
-  // Sync selections → global store whenever user changes them
-  useEffect(() => {
-    updateGoals(selections.goals as FitnessGoal[]);
-    Object.entries(selections.experienceLevels).forEach(([goal, level]) => {
-      updateExperience(goal as FitnessGoal, level as ExperienceLevel);
-    });
-    
-    // Re-check scroll necessity when selections change
-    const preventUnnecessaryScroll = () => {
-      const container = document.querySelector('.main-container') as HTMLElement;
-      if (container) {
-        // Always disable scrolling until user selects at least one goal
-        if (selections.goals.length === 0) {
-          container.style.overflow = 'hidden';
-          return;
-        }
-        
-        const contentHeight = container.scrollHeight;
-        const viewportHeight = window.innerHeight;
-        
-        if (contentHeight <= viewportHeight) {
-          container.style.overflow = 'hidden';
-        } else {
-          container.style.overflowY = 'auto';
-          container.style.overflowX = 'hidden';
-        }
-      }
-    };
-    
-    setTimeout(preventUnnecessaryScroll, 100);
-  }, [selections.goals, selections.experienceLevels, updateGoals, updateExperience]);
 
   const handleGoalToggle = (goal: FitnessGoal) => {
     toggleGoal(goal);
@@ -457,7 +419,8 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
           <div className="text-center">
             <div className="floating-element">
               <img 
-                src="https://archive.org/download/gearupshortfinal/gearupshortfinal.png" 
+                //src="https://archive.org/download/gearupshortfinal/gearupshortfinal.png" 
+                src="https://cdn.jsdelivr.net/gh/kishangoli/ourMini/src/gearupshortfinal.png"
                 alt="Gear Up Logo" 
                 className={`header-logo w-auto mx-auto mb-1 ${isLoaded ? 'slide-in-up' : ''}`}
               />
