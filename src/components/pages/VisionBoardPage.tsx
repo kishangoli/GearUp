@@ -105,8 +105,22 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
     if (!productId || !productVariantId) return;
     try {
       await addToCart({ productId, productVariantId, quantity: 1 });
-      toast.success("Item added to cart", {
-        position: "bottom-center", style: {marginBottom: "40px"}});
+      toast.success("Item added to cart!", {
+        position: "top-center",
+        style: {
+          background: "rgba(34, 197, 94, 0.9)",
+          backdropFilter: "blur(16px)",
+          border: "1px solid rgba(34, 197, 94, 0.3)",
+          borderRadius: "12px",
+          color: "white",
+          fontSize: "14px",
+          fontWeight: "500",
+          padding: "12px 16px",
+          marginTop: "80px",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+        },
+        duration: 2000
+      });
     } catch {
       /* non-blocking */
     }
@@ -303,7 +317,20 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
         }
       `}</style>
       <div className="relative min-h-screen animated-bg">
-        <Toaster />
+        <Toaster 
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: "rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(16px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "12px",
+              color: "white",
+              fontSize: "14px",
+              fontWeight: "500"
+            }
+          }}
+        />
       {/* Header */}
       <div className="pt-12 px-4 pb-6 flex items-center justify-between">
         <button 
@@ -325,7 +352,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
       <div>
         <motion.div
           ref={leftRef}
-          className="fixed left-3 top-[42%] -translate-y-1/2 z-[1000]
+          className="fixed left-3 top-[35%] -translate-y-1/2 z-[1000]
                      trash-icon floating-element
                      flex items-center justify-center"
           animate={
@@ -340,7 +367,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
 
         <motion.div
           ref={rightRef}
-          className="fixed right-3 top-[42%] -translate-y-1/2 z-[1000]
+          className="fixed right-3 top-[35%] -translate-y-1/2 z-[1000]
                      cart-icon floating-element
                      flex items-center justify-center"
           animate={
@@ -356,7 +383,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
 
       {/* Empty vs stack + inline tips just beneath */}
       {items.length === 0 ? (
-        <div className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2">
+        <div className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2">
           {/* Empty state card matching regular content card size */}
           <div 
             className="bg-gray-400/20 backdrop-blur-sm rounded-xl border border-gray-400/30"
@@ -373,7 +400,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
         </div>
       ) : (
         <div
-          className="absolute left-1/2 top-[20%] -translate-x-1/2 -translate-y-1/2
+          className="absolute left-1/2 top-[15%] -translate-x-1/2 -translate-y-1/2
                      flex flex-col items-center"
         >
           <div 
@@ -437,39 +464,39 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
             exit={{ opacity: 0, y: -10, scale: 0.99 }}
             transition={{ duration: 0.22 }}
             className="
-              fixed bottom-10 left-0 right-0 z-[900]
+              fixed bottom-13 left-0 right-0 z-[900]
               w-screen px-6
               py-2
             "
           >
             {/* Header row: 'Tips & Tricks' */}
-            <div className="flex items-center justify-center mb-2">
-              <div className="text-[11px] uppercase tracking-wider text-gray-300 text-center font-medium">
+            <div className="flex items-center justify-center mb-3">
+              <div className="text-xs uppercase tracking-wider text-gray-300 text-center font-medium">
                 Tips & Tricks
               </div>
             </div>
 
             {/* Always-visible content */}
-            <div className="max-w-xs mx-auto">
+            <div className="max-w-sm mx-auto flex-1 flex flex-col">
               {tipsState.loading ? (
-                <div className="flex items-center justify-center h-6 text-xs text-gray-300">
+                <div className="flex items-center justify-center flex-1 text-xs text-gray-300">
                   <div className="animate-pulse">Generating ideas…</div>
                 </div>
               ) : tipsState.error ? (
-                <div className="text-xs text-red-400 text-center py-1">{tipsState.error}</div>
+                <div className="text-xs text-red-400 text-center flex-1 flex items-center justify-center">{tipsState.error}</div>
               ) : tipsState.tips && Array.isArray(tipsState.tips.tips) && tipsState.tips.tips.length > 0 ? (
-                <div className="space-y-1.5 max-h-[25vh] overflow-y-auto">
+                <div className="space-y-1.5 flex-1 flex flex-col">
                   {tipsState.tips.tips.slice(0, 3).map((raw: any, i: number) => {
                     const t = normalizeTip(raw);
                     return (
-                      <div key={i} className="bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/20">
-                        <div className="text-[10px] font-semibold text-white mb-0.5 leading-tight text-center">
+                      <div key={i} className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 border border-white/20 flex-1 flex flex-col justify-center">
+                        <div className="text-xs font-semibold text-white mb-1 leading-tight text-center">
                           {i + 1}. {t.title}
                         </div>
                         {t.bullets.length > 0 && (
                           <div className="space-y-0.5 mt-1">
                             {t.bullets.map((b, j) => (
-                              <div key={j} className="text-[9px] text-gray-300 leading-tight text-center">
+                              <div key={j} className="text-[10px] text-gray-300 leading-relaxed text-center">
                                 • {b}
                               </div>
                             ))}
@@ -480,7 +507,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                   })}
                 </div>
               ) : (
-                <div className="text-xs text-gray-400 text-center py-1">No tips for this product yet.</div>
+                <div className="text-xs text-gray-400 text-center flex-1 flex items-center justify-center">No tips for this product yet.</div>
               )}
             </div>
           </motion.section>
