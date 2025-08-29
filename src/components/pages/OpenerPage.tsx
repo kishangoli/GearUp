@@ -26,7 +26,8 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       {/* title */}
       <div className="flex-1 flex items-center justify-center -mt-40">
         <img 
-          src="https://archive.org/download/gearupfinal/gearupfinal.gif"
+          //src="https://archive.org/download/gearupfinal/gearupfinal.gif"
+          src="https://cdn.jsdelivr.net/gh/kishangoli/ourMini/src/gearup.gif"
           alt="Gear Up Logo" 
           className="h-90 w-auto" 
         />
