@@ -420,7 +420,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
             <div className="floating-element">
               <img 
                 //src="https://archive.org/download/gearupshortfinal/gearupshortfinal.png" 
-                src="https://cdn.jsdelivr.net/gh/kishangoli/ourMini/src/gearupshortfinal.png"
+                src="/Users/amanavi/Documents/GitHub/ourMini/src/gearupshortfinal.png"
                 alt="Gear Up Logo" 
                 className={`header-logo w-auto mx-auto mb-1 ${isLoaded ? 'slide-in-up' : ''}`}
               />
