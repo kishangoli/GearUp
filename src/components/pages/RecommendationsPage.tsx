@@ -92,14 +92,9 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
   // ---------- long press announcement ----------
   const [showLongPressAnnouncement, setShowLongPressAnnouncement] = React.useState(false);
 
-  // Show announcement on first visit
+  // Show announcement every time they reach recommendations
   React.useEffect(() => {
-    const hasSeenAnnouncement = localStorage.getItem('hasSeenLongPressAnnouncement');
-    
-    if (!hasSeenAnnouncement && !loading && plan?.prompts?.length) {
-      // Set localStorage immediately to prevent multiple triggers
-      localStorage.setItem('hasSeenLongPressAnnouncement', 'true');
-      
+    if (!loading && plan?.prompts?.length) {
       setTimeout(() => {
         setShowLongPressAnnouncement(true);
       }, 1000); // Show after 1 second delay
@@ -541,7 +536,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
               >
                 <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
                   <img
-                    src="https://archive.org/download/press-icon/Press%20Icon.png"
+                    src="/press_icon.png"
                     alt="Press icon"
                     className="w-8 h-8 object-contain filter brightness-0 invert"
                   />
