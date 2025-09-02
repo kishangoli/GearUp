@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from "../ui/moving-border";
 import LightRays from '../ui/LightRays';
 
 interface OpenerPageProps {
@@ -8,7 +7,30 @@ interface OpenerPageProps {
 
 export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
   return (
-    <div className="min-h-screen flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40]">
+    <>
+      <style>{`
+        @keyframes gentle-pulse {
+          0%, 100% {
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+          }
+          50% {
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+          }
+        }
+        
+        @keyframes soft-glow {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.6;
+            transform: scale(1.02);
+          }
+        }
+      `}</style>
+      
+      <div className="min-h-screen flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40]">
       <div className="absolute inset-0">
         <LightRays
           raysOrigin="top-center"
@@ -27,7 +49,8 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       <div className="flex-1 flex items-center justify-center -mt-40">
         <img 
           //src="https://archive.org/download/gearupfinal/gearupfinal.gif"
-          src="https://cdn.jsdelivr.net/gh/kishangoli/ourMini/src/gearup.gif"
+          //src="https://cdn.jsdelivr.net/gh/kishangoli/ourMini/src/gearup.gif"
+          src="/gearupfinal.gif"
           alt="Gear Up Logo" 
           className="h-90 w-auto" 
         />
@@ -38,19 +61,29 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
         <p className="text-gray-400 text-center text-base mb-4 px-6">
           Your personal fitness journey starts here.
         </p>
-        <Button
-          onClick={onGetStarted}
-          borderRadius="9999px"
-          duration={4000}
-          containerClassName="h-16 p-[0.4px] w-full"
-          borderClassName="h-16 w-16 opacity-90 bg-[radial-gradient(#ffffff_45%,transparent_46%)] drop-shadow-[0_0_10px_rgba(255,255,255,0.85)]"
-          className="rounded-full bg-transparent text-white font-semibold text-xl
-                    hover:bg-white/10 transition-all duration-200
-                    border border-white"
-        >
-          Get Started
-        </Button>
+        <div className="relative">
+          <button
+            onClick={onGetStarted}
+            className="w-full h-16 rounded-full bg-transparent text-white font-semibold text-xl
+                      border border-white relative overflow-hidden
+                      hover:bg-white/10 transition-all duration-300 ease-out
+                      shadow-[0_0_15px_rgba(255,255,255,0.4)]
+                      hover:shadow-[0_0_25px_rgba(255,255,255,0.6)]"
+            style={{
+              animation: 'gentle-pulse 3s ease-in-out infinite'
+            }}
+          >
+            <div 
+              className="absolute inset-0 rounded-full bg-white/8" 
+              style={{
+                animation: 'soft-glow 4s ease-in-out infinite'
+              }}
+            ></div>
+            <span className="relative z-10">Get Started</span>
+          </button>
+        </div>
       </div>
     </div>
+    </>
   );
 };

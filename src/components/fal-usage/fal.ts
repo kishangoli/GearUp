@@ -66,35 +66,118 @@ Return JSON only.
   console.log("Prompt being sent to backend:", prompt);
 
   // Call the backend server
-  const response = await fetch("https://backend-448821269912.us-central1.run.app/handleFalRequest", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ prompt }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to call backend server");
-  }
-
-  const { output } = await response.json();
-
-  let plan: SearchPlan = { prompts: [] };
-
   try {
-    const parsed = JSON.parse(String(output));
-    if (Array.isArray(parsed?.prompts)) {
-      plan.prompts = parsed.prompts
-        .filter((p: any) => p && typeof p.label === "string" && typeof p.query === "string")
-        .slice(0, 6);
-    }
-  } catch (e) {
-    console.error("Failed to parse search plan from backend:", e);
-    throw new Error("Failed to generate a search plan. Please try again.");
-  }
+    const response = await fetch("https://backend-448821269912.us-central1.run.app/handleFalRequest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt }),
+    });
 
-  return plan;
+    if (!response.ok) {
+      throw new Error(`Backend error: ${response.status}`);
+    }
+
+    const { output } = await response.json();
+    
+    let plan: SearchPlan = { prompts: [] };
+
+    try {
+      const parsed = JSON.parse(String(output));
+      if (Array.isArray(parsed?.prompts)) {
+        plan.prompts = parsed.prompts
+          .filter((p: any) => p && typeof p.label === "string" && typeof p.query === "string")
+          .slice(0, 6);
+      }
+    } catch (e) {
+      console.error("Failed to parse search plan from backend:", e);
+      throw new Error("Failed to generate a search plan. Please try again.");
+    }
+
+    return plan;
+  } catch (error) {
+    console.error("Backend failed, using fallback recommendations:", error);
+    
+    // Fallback recommendations based on user's goals
+    const goals = cleanAnswers.goals || [];
+    const fallbackPrompts: SearchPrompt[] = [];
+    
+    if (goals.includes('strength')) {
+      fallbackPrompts.push(
+        { label: "Strength Training Essentials", query: "dumbbells resistance bands strength training equipment" },
+        { label: "Protein & Recovery", query: "protein powder post workout recovery supplements" },
+        { label: "Workout Apparel", query: "athletic wear gym clothes workout shirts" },
+        { label: "Training Accessories", query: "lifting gloves wrist straps gym accessories" }
+      );
+    }
+    
+    if (goals.includes('running')) {
+      fallbackPrompts.push(
+        { label: "Running Shoes & Gear", query: "running shoes athletic footwear" },
+        { label: "Hydration & Nutrition", query: "water bottle electrolytes running nutrition" },
+        { label: "Running Apparel", query: "running shorts athletic wear moisture wicking" },
+        { label: "Performance Tracking", query: "fitness tracker running watch gps" }
+      );
+    }
+    
+    if (goals.includes('dietary')) {
+      fallbackPrompts.push(
+        { label: "Healthy Snacks", query: "healthy snacks protein bars nutrition" },
+        { label: "Supplements & Vitamins", query: "vitamins supplements health nutrition" },
+        { label: "Meal Prep Tools", query: "meal prep containers kitchen tools food storage" },
+        { label: "Cooking Essentials", query: "blender food processor healthy cooking appliances" }
+      );
+    }
+    
+    if (goals.includes('recovery')) {
+      fallbackPrompts.push(
+        { label: "Recovery Tools", query: "foam roller massage tools muscle recovery" },
+        { label: "Sleep & Relaxation", query: "sleep aids relaxation wellness recovery" },
+        { label: "Therapy Equipment", query: "heating pad ice packs therapy tools" },
+        { label: "Stretching & Mobility", query: "yoga mat stretching bands mobility tools" }
+      );
+    }
+    
+    // Always add these general categories to ensure we have at least 4
+    const generalCategories = [
+      { label: "Fitness Essentials", query: "fitness equipment workout gear exercise" },
+      { label: "Health & Wellness", query: "health supplements wellness products vitamins" },
+      { label: "Athletic Wear", query: "athletic wear sports clothing workout apparel" },
+      { label: "Hydration & Energy", query: "water bottle energy drinks electrolytes hydration" }
+    ];
+    
+    // Add general categories that aren't already covered
+    const existingLabels = fallbackPrompts.map(p => p.label.toLowerCase());
+    generalCategories.forEach(category => {
+      const isAlreadyIncluded = existingLabels.some(label => 
+        label.includes(category.label.toLowerCase().split(' ')[0]) || 
+        category.label.toLowerCase().includes(label.split(' ')[0])
+      );
+      
+      if (!isAlreadyIncluded) {
+        fallbackPrompts.push(category);
+      }
+    });
+    
+    // Ensure we have at least 4 categories, add more if needed
+    if (fallbackPrompts.length < 4) {
+      const additionalCategories = [
+        { label: "Training Accessories", query: "gym accessories fitness tools workout equipment" },
+        { label: "Outdoor Activities", query: "outdoor gear hiking camping sports equipment" },
+        { label: "Home Gym Setup", query: "home gym equipment exercise machines fitness gear" },
+        { label: "Sports Performance", query: "sports gear performance equipment athletic accessories" }
+      ];
+      
+      additionalCategories.forEach(category => {
+        if (fallbackPrompts.length < 6) {
+          fallbackPrompts.push(category);
+        }
+      });
+    }
+    
+    return { prompts: fallbackPrompts };
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -176,54 +259,192 @@ ${JSON.stringify(context ?? {}, null, 2)}
 `.trim();
 
   // Call the backend server
-  const response = await fetch("https://backend-448821269912.us-central1.run.app/handleFalRequest", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ prompt }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to call backend server");
-  }
-
-  const { output } = await response.json();
-
-  const raw =
-    (output as any)?.output ??
-    (output as any)?.output?.content ??
-    (typeof output === "string" ? output : "");
-
   try {
-    const parsed = JSON.parse(String(raw));
-    if (Array.isArray(parsed?.tips)) {
-      const tips = parsed.tips.slice(0, 5).map((t: any) => ({
-        title: String(t?.title ?? "Tip"),
-        tipType: (t?.tipType ?? "usage") as CartTips["tips"][number]["tipType"],
-        items: Array.isArray(t?.items) ? t.items.map(String) : [],
-        steps: Array.isArray(t?.steps) ? t.steps.map(String) : undefined,
-        timeEstimate: t?.timeEstimate ? String(t.timeEstimate) : undefined,
-        notes: t?.notes ? String(t.notes) : undefined,
-      }));
-      return { tips };
-    }
-  } catch (e) {
-    console.error("Failed to parse cart tips from backend:", e);
-    throw new Error("Failed to generate tips for your items. Please try again.");
-  }
+    const response = await fetch("https://backend-448821269912.us-central1.run.app/handleFalRequest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt }),
+    });
 
-  // Fallback logic remains unchanged
-  return {
-    tips: cart.slice(0, 3).map((c) => ({
-      title: `How to use ${c.title}`,
-      tipType: "usage",
-      items: [c.title],
-      steps: ["Unbox safely", "Read quick-start notes", "Try a short 10-minute session"],
-      timeEstimate: "10 min",
-      notes: "Auto-generated fallback.",
-    })),
-  };
+    console.log("Tips backend response status:", response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Tips backend error response:", errorText);
+      throw new Error(`Tips backend server error (${response.status}): ${errorText}`);
+    }
+
+    const { output } = await response.json();
+    console.log("Tips backend output:", output);
+
+    const raw =
+      (output as any)?.output ??
+      (output as any)?.output?.content ??
+      (typeof output === "string" ? output : "");
+
+    try {
+      const parsed = JSON.parse(String(raw));
+      if (Array.isArray(parsed?.tips)) {
+        const tips = parsed.tips.slice(0, 5).map((t: any) => ({
+          title: String(t?.title ?? "Tip"),
+          tipType: (t?.tipType ?? "usage") as CartTips["tips"][number]["tipType"],
+          items: Array.isArray(t?.items) ? t.items.map(String) : [],
+          steps: Array.isArray(t?.steps) ? t.steps.map(String) : undefined,
+          timeEstimate: t?.timeEstimate ? String(t.timeEstimate) : undefined,
+          notes: t?.notes ? String(t.notes) : undefined,
+        }));
+        return { tips };
+      }
+    } catch (e) {
+      console.error("Failed to parse cart tips from backend:", e);
+      throw new Error("Failed to generate tips for your items. Please try again.");
+    }
+  } catch (error) {
+    console.error("Tips network or backend error:", error);
+    console.log("Using enhanced fallback tips for cart items");
+    
+    // Enhanced fallback tips based on cart items
+    const fallbackTips: CartTips["tips"] = [];
+    
+    // Analyze cart items to provide better tips
+    const hasProtein = cart.some(item => 
+      item.title.toLowerCase().includes('protein') || 
+      item.tags?.some(tag => tag.toLowerCase().includes('protein'))
+    );
+    
+    const hasEquipment = cart.some(item => 
+      item.title.toLowerCase().includes('dumbbell') || 
+      item.title.toLowerCase().includes('resistance') ||
+      item.title.toLowerCase().includes('equipment') ||
+      item.productType?.toLowerCase().includes('equipment')
+    );
+    
+    const hasSupplements = cart.some(item => 
+      item.title.toLowerCase().includes('supplement') || 
+      item.title.toLowerCase().includes('vitamin') ||
+      item.tags?.some(tag => tag.toLowerCase().includes('supplement'))
+    );
+    
+    const hasApparel = cart.some(item => 
+      item.title.toLowerCase().includes('shirt') || 
+      item.title.toLowerCase().includes('shorts') ||
+      item.title.toLowerCase().includes('wear') ||
+      item.productType?.toLowerCase().includes('apparel')
+    );
+
+    // Add specific tips based on what's in the cart
+    if (hasProtein) {
+      fallbackTips.push({
+        title: "Maximize Your Protein Intake",
+        tipType: "recipe",
+        items: cart.filter(item => 
+          item.title.toLowerCase().includes('protein')).map(item => item.title),
+        steps: [
+          "Mix 1-2 scoops with 8-12oz water or milk",
+          "Consume within 30 minutes post-workout",
+          "Try blending with banana for better taste"
+        ],
+        timeEstimate: "2 min",
+        notes: "Best results when combined with resistance training"
+      });
+    }
+
+    if (hasEquipment) {
+      fallbackTips.push({
+        title: "Quick Equipment Workout",
+        tipType: "routine",
+        items: cart.filter(item => 
+          item.title.toLowerCase().includes('dumbbell') || 
+          item.title.toLowerCase().includes('resistance')).map(item => item.title),
+        steps: [
+          "Start with 5-minute warm-up",
+          "3 sets of 8-12 reps per exercise",
+          "Rest 30-60 seconds between sets",
+          "Cool down with light stretching"
+        ],
+        timeEstimate: "20-30 min",
+        notes: "Focus on proper form over heavy weight"
+      });
+    }
+
+    if (hasSupplements) {
+      fallbackTips.push({
+        title: "Supplement Timing Guide",
+        tipType: "usage",
+        items: cart.filter(item => 
+          item.title.toLowerCase().includes('supplement') || 
+          item.title.toLowerCase().includes('vitamin')).map(item => item.title),
+        steps: [
+          "Take with food to improve absorption",
+          "Follow dosage instructions on label",
+          "Stay consistent with daily timing",
+          "Track how you feel over 2-4 weeks"
+        ],
+        timeEstimate: "1 min daily",
+        notes: "Consult healthcare provider if you have concerns"
+      });
+    }
+
+    if (hasApparel) {
+      fallbackTips.push({
+        title: "Workout Gear Care",
+        tipType: "care",
+        items: cart.filter(item => 
+          item.title.toLowerCase().includes('shirt') || 
+          item.title.toLowerCase().includes('shorts')).map(item => item.title),
+        steps: [
+          "Wash in cold water to prevent shrinking",
+          "Turn inside out before washing",
+          "Air dry to maintain fabric integrity",
+          "Avoid fabric softener on moisture-wicking materials"
+        ],
+        timeEstimate: "5 min prep",
+        notes: "Proper care extends the life of your gear"
+      });
+    }
+
+    // Add general tips if we don't have enough specific ones
+    if (fallbackTips.length < 3) {
+      const generalTips = [
+        {
+          title: "Start Your Fitness Journey",
+          tipType: "routine" as const,
+          items: cart.slice(0, 2).map(item => item.title),
+          steps: [
+            "Set realistic, achievable goals",
+            "Start with 2-3 workouts per week",
+            "Track your progress consistently",
+            "Listen to your body and rest when needed"
+          ],
+          timeEstimate: "Plan 15 min",
+          notes: "Consistency beats intensity for long-term success"
+        },
+        {
+          title: "Optimize Your Purchases",
+          tipType: "usage" as const,
+          items: cart.slice(0, 3).map(item => item.title),
+          steps: [
+            "Read all product instructions carefully",
+            "Start with recommended beginner doses/weights",
+            "Create a consistent routine",
+            "Track results and adjust as needed"
+          ],
+          timeEstimate: "10 min setup",
+          notes: "Getting the most value from your fitness investments"
+        }
+      ];
+
+      generalTips.forEach(tip => {
+        if (fallbackTips.length < 5) {
+          fallbackTips.push(tip);
+        }
+      });
+    }
+
+    return { tips: fallbackTips };
+  }
 }
 
 /* -------------------------------------------------------------------------- */
