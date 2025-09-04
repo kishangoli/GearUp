@@ -69,8 +69,15 @@ export function preprocessAnswers(raw: Partial<UserAnswers>): UserAnswers {
   const experienceLevels: Record<FitnessGoal, ExperienceLevel> = {} as any;
 
   for (const goal of normalizedGoals) {
-    const level = normalizeLevel(inputLevels[goal]);
-    experienceLevels[goal] = level;
+    // First check followUps for strength_experience
+    const followUpLevel = raw?.followUps?.[goal]?.strength_experience;
+    if (followUpLevel) {
+      experienceLevels[goal] = normalizeLevel(followUpLevel);
+    } else {
+      // Fall back to inputLevels if no followUp exists
+      const level = normalizeLevel(inputLevels[goal]);
+      experienceLevels[goal] = level;
+    }
   }
 
   // 3) normalize followUps to only include selected goals (keep original objects)
