@@ -35,6 +35,15 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
   const currentGoalQuestions = FOLLOW_UP_QUESTIONS.find(q => q.goalId === currentGoal);
   const currentGoalAnswers = answers[currentGoal] || {};
 
+  // Calculate total questions for the current goal, including conditional ones
+  const totalQuestionsForGoal = React.useMemo(() => {
+    let count = currentGoalQuestions?.questions.length || 0;
+    if (currentGoal === 'dietary' && currentGoalAnswers['dietary_preference'] === 'Allergies') {
+      count += 1;
+    }
+    return count;
+  }, [currentGoal, currentGoalAnswers, currentGoalQuestions]);
+
   // Helper function to check if a question is answered
   const isQuestionAnswered = (questionId: string) => {
     const answer = currentGoalAnswers[questionId];
@@ -232,12 +241,17 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         return (
           <div 
             data-question-id={DIETARY_ALLERGIES_QUESTION.id}
-            className={`question-card rounded-2xl p-6 mt-6 fade-in-stagger ${showWarning ? 'border-red-400/50 bg-red-500/5' : ''}`} 
+            className={`question-card rounded-2xl p-6 mt-6 fade-in-stagger relative ${showWarning ? 'border-red-400/50 bg-red-500/5' : ''}`} 
             style={{ animationDelay: '0.4s' }}
           >
-            <div className="flex items-center mb-4">
+            {/* Question Counter Badge */}
+            <div className="absolute top-4 right-4 text-xs font-mono text-white/60 bg-white/10 px-2 py-1 rounded-full">
+              {totalQuestionsForGoal} / {totalQuestionsForGoal}
+            </div>
+
+            <div className="flex items-center mb-4 pr-16">
               <span className="text-2xl mr-3">{DIETARY_ALLERGIES_QUESTION.icon}</span>
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="flex-1 text-lg font-semibold text-white text-center">
                 {DIETARY_ALLERGIES_QUESTION.question}
               </h3>
             </div>
@@ -537,12 +551,17 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
                 <div 
                   key={question.id} 
                   data-question-id={question.id}
-                  className={`question-card rounded-2xl p-6 fade-in-stagger ${showWarning ? 'border-red-400/50 bg-red-500/5' : ''}`} 
+                  className={`question-card rounded-2xl p-6 fade-in-stagger relative ${showWarning ? 'border-red-400/50 bg-red-500/5' : ''}`} 
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="flex items-center mb-4">
+                  {/* Question Counter Badge */}
+                  <div className="absolute top-4 right-4 text-xs font-mono text-white/60 bg-white/10 px-2 py-1 rounded-full">
+                    {index + 1} / {totalQuestionsForGoal}
+                  </div>
+
+                  <div className="flex items-center mb-4 pr-16">
                     <span className="text-2xl mr-3">{question.icon}</span>
-                    <h3 className="text-lg font-semibold text-white">
+                    <h3 className="flex-1 text-lg font-semibold text-white text-center">
                       {question.question}
                     </h3>
                   </div>

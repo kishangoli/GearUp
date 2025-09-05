@@ -4,6 +4,7 @@ import { FITNESS_GOALS } from '../label-data/fitnessGoals';
 import { FitnessGoal, ExperienceLevel } from '../types/fitness';
 import { useUserAnswers } from '../context/UserAnswersContext';
 import { Button } from "../ui/moving-border";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MainPageProps {
   onBack: () => void;
@@ -110,12 +111,18 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
     onProceed(selections);
   };
 
-  // Simple checkmark component fallback
-  const CheckmarkIcon = () => (
-    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center animate-bounce">
-      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-      </svg>
+  // Updated CheckmarkIcon component
+  const CheckmarkIcon = ({ isSelected }: { isSelected: boolean }) => (
+    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+      isSelected 
+        ? 'bg-green-500 animate-bounce' 
+        : 'border-2 border-white/20'
+    }`}>
+      {isSelected && (
+        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      )}
     </div>
   );
 
@@ -389,7 +396,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
       <div className={`main-container h-screen overflow-y-auto overflow-x-hidden max-w-full animated-bg relative flex flex-col ${isCompactView ? 'compact-layout' : 'normal-layout'}`} style={{ overscrollBehavior: 'none' }}>
         {/* Enhanced Progress Bar at Top */}
         <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="h-2 bg-gray-800/80 backdrop-blur-sm border-b border-white/10">
+          <div className="h-2 bg-gray-800/80 backdrop-blur-sm">
             <div 
               className="h-full bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 shadow-lg shadow-blue-500/30 transition-all duration-500 ease-out glow-effect"
               style={{ 
@@ -433,9 +440,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
 
         {/* Goals Selection Section */}
         <div className="px-4 mb-4 mt-2 flex-1">
-          <h2 className={`text-xl font-semibold text-gray-200 mb-3 text-center ${isLoaded ? 'slide-in-up' : ''}`} style={{ animationDelay: '0.3s' }}>
-            Pick your goal(s)
-          </h2>
+          
           <div className="goal-grid grid grid-cols-2 gap-4 mb-4">
             {FITNESS_GOALS.map((goal, index) => (
               <button
@@ -450,11 +455,9 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
                     : 'glass-morphism text-gray-200'
                 } ${isLoaded ? 'fade-in-stagger' : ''} stagger-${index + 1}`}
               >
-                {isGoalSelected(goal.id) && (
-                  <div className="absolute top-3 right-3">
-                    <CheckmarkIcon />
-                  </div>
-                )}
+                <div className="absolute top-3 right-3">
+                  <CheckmarkIcon isSelected={isGoalSelected(goal.id)} />
+                </div>
                 <div className={`text-4xl mb-3 ${isCompactView ? 'text-3xl mb-2' : ''}`}>{goal.icon}</div>
                 <div className={`text-base font-semibold mb-2 ${isCompactView ? 'text-sm mb-1' : ''}`}>
                   {goal.label}
@@ -467,25 +470,45 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
           </div>
         </div>
         
-        {/* Fixed Action Button at Bottom - Only show when goals are selected */}
-        {selections.goals.length > 0 && (
-          <div className="px-4 mt-0 mb-4">
-            <Button
-              onClick={handleGetRecommendations}
-              borderRadius="1rem"
-              duration={4000}
-              containerClassName="h-16 p-[1px] w-full"
-              borderClassName="opacity-70 bg-gradient-to-r from-blue-400 to-purple-500"
-              className={`rounded-2xl bg-slate-800 font-semibold transition-all duration-300 transform touch-feedback relative overflow-hidden ${
-                isCompactView ? 'text-base' : 'text-lg'
-              } text-white border border-blue-500/30`}
-            >
-              <div className="relative z-10">
-                Continue to Questions
-              </div>
-            </Button>
-          </div>
-        )}
+        {/* Fixed Action Button at Bottom */}
+        <div className="px-4 mt-0 mb-8 h-16 w-full"> {/* Raised button and set fixed height */}
+          <AnimatePresence mode="wait">
+            {selections.goals.length > 0 ? (
+              // ACTIVE STATE: Animated Button
+              <motion.div
+                key="active-button"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="h-full w-full"
+              >
+                <Button
+                  onClick={handleGetRecommendations}
+                  borderRadius="1rem"
+                  duration={4000}
+                  containerClassName="h-full w-full"
+                  borderClassName="opacity-70 bg-gradient-to-r from-blue-400 to-purple-500"
+                  className={`h-full w-full rounded-2xl font-semibold transition-colors duration-300 bg-slate-800 text-white touch-feedback ${isCompactView ? 'text-base' : 'text-lg'}`}
+                >
+                  Continue
+                </Button>
+              </motion.div>
+            ) : (
+              // INACTIVE STATE: Simple, non-animated div
+              <motion.div
+                key="inactive-button"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className={`h-full w-full rounded-2xl font-semibold flex items-center justify-center bg-gray-800/50 text-gray-400 cursor-not-allowed ${isCompactView ? 'text-base' : 'text-lg'}`}
+              >
+                Pick your goal(s) to continue
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
         </div>
       </div>
     </>
