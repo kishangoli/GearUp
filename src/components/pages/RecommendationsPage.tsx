@@ -1008,11 +1008,21 @@ const PromptRow: React.FC<{
   // Filter products by price
   const filteredProducts = React.useMemo(() => {
     return products.filter(product => {
-      // Extract price from product - handle different price formats
-      const priceStr = product.price?.amount || product.priceRange?.minVariantPrice?.amount || product.variants?.edges?.[0]?.node?.price?.amount || '0';
+      // Extract price from product - handle different price formats with better fallbacks
+      const priceStr = product.price?.amount || 
+                      product.priceRange?.minVariantPrice?.amount || 
+                      product.variants?.edges?.[0]?.node?.price?.amount ||
+                      product.variants?.[0]?.price?.amount ||
+                      (typeof product.price === 'string' ? product.price : '0');
+      
+      // Convert price string to number, handling currency symbols and commas
       const price = parseFloat(priceStr.toString().replace(/[^0-9.]/g, ''));
       
-      return price >= priceFilter.min && price <= priceFilter.max;
+      // If price is 0 or invalid, show the product anyway
+      if (!price || isNaN(price)) return true;
+      
+      // Use a more lenient price range check
+      return price >= (priceFilter.min || 0) && price <= (priceFilter.max || 1000);
     });
   }, [products, priceFilter]);
 
@@ -1021,15 +1031,21 @@ const PromptRow: React.FC<{
     if (products.length === 0) return { min: 0, max: 0 };
     
     const prices = products.map(product => {
-      const priceStr = product.price?.amount || product.priceRange?.minVariantPrice?.amount || product.variants?.edges?.[0]?.node?.price?.amount || '0';
-      return parseFloat(priceStr.toString().replace(/[^0-9.]/g, ''));
-    }).filter(price => price > 0);
-    
+      const priceStr = product.price?.amount || 
+                      product.priceRange?.minVariantPrice?.amount || 
+                      product.variants?.edges?.[0]?.node?.price?.amount ||
+                      product.variants?.[0]?.price?.amount ||
+                      (typeof product.price === 'string' ? product.price : '0');
+      
+      const price = parseFloat(priceStr.toString().replace(/[^0-9.]/g, ''));
+      return isNaN(price) ? null : price;
+    }).filter((p): p is number => p !== null);
+
     if (prices.length === 0) return { min: 0, max: 0 };
-    
+
     return {
       min: Math.min(...prices),
-      max: Math.max(...prices)
+      max: Math.max(...prices),
     };
   }, [products]);
 
