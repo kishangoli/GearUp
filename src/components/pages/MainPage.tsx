@@ -422,7 +422,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         </div>
 
         {/* Header Section */}
-        <div className="px-4 pt-8 pb-1">          
+        <div className="px-4 pt-18 pb-1">          
           <div className="text-center">
             <div className="floating-element">
               <img 
