@@ -11,6 +11,7 @@ import { useUserAnswers } from "./components/context/UserAnswersContext";
 import { buildSearchPlanClient } from "./components/fal-usage/fal";
 
 
+
 /* ---------------- Error Boundary (shows errors instead of white screen) --------------- */
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: any }> {
   state = { error: null as any };
@@ -51,7 +52,7 @@ export const App: React.FC = () => {
   const answers = ua?.answers ?? { goals: [] as string[] };
 
   const handleFollowUpsComplete = async () => {
-    console.log("Starting to load recommendations...");
+    
     setPage("loading");
     
     // Force a minimum loading time to ensure users see the LoadingPage

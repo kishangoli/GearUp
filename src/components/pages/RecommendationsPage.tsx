@@ -973,6 +973,7 @@ const PromptRow: React.FC<{
   onAnyItemAdded: (product: any, element: HTMLElement | null) => void;
   priceFilter: { min: number; max: number };
 }> = ({ prompt, blurb, onAnyItemAdded, priceFilter }) => {
+  const { add } = useVisionBoard();
   const [fetchCount, setFetchCount] = React.useState(20);
   const raw: any = useProductSearch({ query: prompt.query, first: fetchCount });
 
@@ -1147,7 +1148,22 @@ const PromptRow: React.FC<{
                         onAnyItemAdded(product, element);
                       }}
                     >
-                      <ProductCard product={prod} />
+                      <div className="relative w-full h-full">
+                        <ProductCard product={prod} />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent long-press from firing
+                            // Action for this button can be added here later
+                            add(prod);
+                            removeById(key);
+                            onAnyItemAdded(prod, e.currentTarget);
+                          }}
+                          className="absolute bottom-15 right-3 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold hover:bg-black/70 active:scale-90 transition-all duration-200"
+                          aria-label="Quick add"
+                        >
+                          +
+                        </button>
+                      </div>
                     </LongPressToAdd>
                   </motion.div>
                 );
