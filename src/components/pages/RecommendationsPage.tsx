@@ -938,21 +938,25 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           ))}
       </div>
 
-      {items.length > 0 && (
-        <div className="fixed left-0 right-0 bottom-0 px-4 pb-6 pt-2 bg-gradient-to-t from-slate-900/90 via-slate-800/50 to-transparent backdrop-blur">
-          <div className="flex gap-2">
-            {onViewVisionBoard && (
-              <button
-                onClick={onViewVisionBoard}
-                data-review-gear-button
-                className="flex-1 h-12 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 active:bg-blue-800 transition-colors"
-              >
-              Review Your Gear 
-              </button>
-            )}
-          </div>
+      {/* Sticky Review Gear Button - Always visible */}
+      <div className="fixed left-0 right-0 bottom-0 px-4 pb-6 pt-2 bg-gradient-to-t from-slate-900/90 via-slate-800/50 to-transparent backdrop-blur">
+        <div className="flex gap-2">
+          {onViewVisionBoard && (
+            <button
+              onClick={items.length > 0 ? onViewVisionBoard : undefined}
+              data-review-gear-button
+              className={`flex-1 h-12 rounded-xl font-medium shadow transition-colors ${
+                items.length > 0 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 cursor-pointer' 
+                  : 'bg-gray-600/50 text-gray-300 cursor-not-allowed'
+              }`}
+              disabled={items.length === 0}
+            >
+              {items.length > 0 ? 'Review Your Gear' : 'Add gear to begin'}
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </div>
     </>
   );
