@@ -433,7 +433,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
               />
             </div>
             <p className={`responsive-text text-gray-200 mb-1 max-w-md mx-auto ${isLoaded ? 'slide-in-up' : ''}`} style={{ animationDelay: '0.2s' }}>
-              Tell us your goals. We'll curate gear, nutrition, and recovery picks.
+              Your personal fitness journey begins here.
             </p>
           </div>
         </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import LightRays from '../ui/LightRays';
 
 interface OpenerPageProps {
   onGetStarted: () => void;
@@ -30,36 +29,36 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
         }
       `}</style>
       
-      <div className="min-h-screen flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40]">
-      <div className="absolute inset-0">
-        <LightRays
-          raysOrigin="top-center"
-          raysColor="#00000"
-          raysSpeed={1.5}
-          lightSpread={0.2}
-          rayLength={2.4}
-          followMouse={true}
-          mouseInfluence={0.1}
-          noiseAmount={0.1}
-          distortion={0.05}
-          className="custom-rays"
-        />
-      </div>
-      {/* title */}
-      <div className="flex-1 flex items-center justify-center -mt-40">
-        <img 
-          //src="https://archive.org/download/gearupfinal/gearupfinal.gif"
-          //src="https://cdn.jsdelivr.net/gh/kishangoli/ourMini/src/gearup.gif"
-          src="/gearupfinal.gif"
-          alt="Gear Up Logo" 
-          className="h-90 w-auto" 
-        />
-      </div>
+      <div className="min-h-screen flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40] relative">
+        {/* Video Background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        >
+          <source src="/running.mp4" type="video/mp4" />
+        </video>
+        
+        {/* Translucent Overlay */}
+        <div className="absolute inset-0 bg-black/50 z-10"></div>
+        
+        {/* title */}
+        <div className="flex-1 flex items-center justify-center -mt-40 relative z-30">
+          <img 
+            //src="https://archive.org/download/gearupfinal/gearupfinal.gif"
+            //src="https://cdn.jsdelivr.net/gh/kishangoli/ourMini/src/gearup.gif"
+            src="/gearupfinal.gif"
+            alt="Gear Up Logo" 
+            className="h-90 w-auto" 
+          />
+        </div>
 
-      {/* get started button */}
-      <div className="w-full">
-        <p className="text-gray-400 text-center text-base mb-4 px-6">
-          Your personal fitness journey starts here.
+        {/* get started button */}
+        <div className="w-full relative z-30">
+        <p className="text-gray-400 text-center text-base mb-8 px-2">
+          Tell us your goals. We'll curate personalized gear, nutrition, and recovery picks.
         </p>
         <div className="relative">
           <button
