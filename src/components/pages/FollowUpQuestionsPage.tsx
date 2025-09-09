@@ -172,6 +172,69 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
     }
   };
 
+  // NEW: Randomize function to automatically select random options
+  const handleRandomize = () => {
+    if (!currentGoalQuestions) return;
+    
+    const newAnswers = { ...currentGoalAnswers };
+    
+    // Randomize all questions for the current goal
+    currentGoalQuestions.questions.forEach(question => {
+      if (question.type === 'radio' && question.options) {
+        // Select a random option
+        const randomIndex = Math.floor(Math.random() * question.options.length);
+        const randomOption = question.options[randomIndex];
+        const optionText = typeof randomOption === 'string' ? randomOption : randomOption.text;
+        newAnswers[question.id] = optionText;
+        updateAnswer(currentGoal, question.id, optionText);
+      } else if (question.type === 'multi-select' && question.options) {
+        // For multi-select questions, select 1-3 random options
+        const shuffled = [...question.options].sort(() => 0.5 - Math.random());
+        const numToSelect = Math.floor(Math.random() * Math.min(3, question.options.length)) + 1;
+        const selectedOptions = shuffled.slice(0, numToSelect);
+        const optionTexts = selectedOptions.map(option => 
+          typeof option === 'string' ? option : option.text
+        );
+        newAnswers[question.id] = optionTexts;
+        updateAnswer(currentGoal, question.id, optionTexts);
+      } else if (question.type === 'text') {
+        // For text questions, provide a generic placeholder response
+        const placeholderResponses = [
+          'Moderate level',
+          'As needed',
+          'Standard preference',
+          'Flexible approach',
+          'Default selection'
+        ];
+        const randomResponse = placeholderResponses[Math.floor(Math.random() * placeholderResponses.length)];
+        newAnswers[question.id] = randomResponse;
+        updateAnswer(currentGoal, question.id, randomResponse);
+      }
+    });
+
+    // Handle conditional dietary allergies question (it's a text type)
+    if (currentGoal === 'dietary' && newAnswers['dietary_preference'] === 'Allergies') {
+      const commonAllergies = ['nuts', 'dairy', 'gluten', 'shellfish', 'eggs'];
+      const randomAllergies = commonAllergies
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.floor(Math.random() * 2) + 1)
+        .join(', ');
+      newAnswers[DIETARY_ALLERGIES_QUESTION.id] = randomAllergies;
+      updateAnswer(currentGoal, DIETARY_ALLERGIES_QUESTION.id, randomAllergies);
+    }
+
+    // Auto-scroll to the Get Recommendations button after randomizing
+    setTimeout(() => {
+      const navigationElement = document.querySelector('[data-navigation]');
+      if (navigationElement) {
+        navigationElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }, 300); // Brief delay to let the UI update with randomized selections
+  };
+
   const renderQuestion = (question: any) => {
     const currentValue = currentGoalAnswers[question.id];
 
@@ -517,7 +580,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         </div>
 
         {/* Header with Progress */}
-        <div className="pt-6 px-4 pb-6">
+        <div className="pt-25 px-4 pb-6">
           
           {/* Sticky Back Button */}
           <div className="fixed top-4 left-4 z-50">
@@ -526,6 +589,17 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
               className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
             >
               <span className="text-xl">←</span>
+            </button>
+          </div>
+
+          {/* Randomize Button */}
+          <div className="fixed top-4 right-4 z-50">
+            <button
+              onClick={handleRandomize}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600/80 backdrop-blur-sm rounded-xl text-white text-sm font-medium hover:bg-purple-700/80 transition-all duration-200 shadow-lg"
+            >
+              <span className="text-lg">🎲</span>
+              <span>Randomize</span>
             </button>
           </div>
 
