@@ -123,6 +123,19 @@ export default function VisionBoardWarmupPage({ onDone, onBack, title = "Getting
         }
       `}</style>
       <div className="relative min-h-screen animated-bg flex items-center justify-center">
+        
+        {/* Sticky Back Button */}
+        {onBack && (
+          <div className="fixed top-4 left-4 z-50">
+            <button
+              onClick={onBack}
+              className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
+            >
+              <span className="text-xl">←</span>
+            </button>
+          </div>
+        )}
+
         <div className="w-[320px] max-w-[90vw] rounded-3xl glass-morphism floating-element p-6 text-center">
           <div className="mb-4 text-4xl">⚡</div>
           <h1 className="text-lg font-semibold text-white">{title}</h1>
@@ -161,15 +174,6 @@ export default function VisionBoardWarmupPage({ onDone, onBack, title = "Getting
             </motion.div>
           )}
         </AnimatePresence>
-
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="mt-3 text-xs text-gray-400 hover:text-gray-200 underline transition-colors duration-200"
-          >
-            Cancel
-          </button>
-        )}
       </div>
     </div>
     </>

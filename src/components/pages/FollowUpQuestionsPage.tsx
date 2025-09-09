@@ -518,14 +518,15 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
 
         {/* Header with Progress */}
         <div className="pt-6 px-4 pb-6">
-          <div className="flex items-center justify-between mb-6">
+          
+          {/* Sticky Back Button */}
+          <div className="fixed top-4 left-4 z-50">
             <button
               onClick={handleBack}
-              className="flex items-center justify-center w-10 h-10 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200"
+              className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
             >
               <span className="text-xl">←</span>
             </button>
-            <div className="w-10" />
           </div>
 
           {/* Goal Header */}

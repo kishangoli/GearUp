@@ -51,21 +51,37 @@ export const App: React.FC = () => {
   const answers = ua?.answers ?? { goals: [] as string[] };
 
   const handleFollowUpsComplete = async () => {
+    console.log("Starting to load recommendations...");
     setPage("loading");
+    
+    // Force a minimum loading time to ensure users see the LoadingPage
+    const minimumLoadingTime = new Promise(resolve => setTimeout(resolve, 2000)); // 2 seconds minimum
+    
     try {
-      const built = await buildSearchPlanClient(answers);
+      console.log("Building search plan...");
+      const [built] = await Promise.all([
+        buildSearchPlanClient(answers),
+        minimumLoadingTime
+      ]);
+      console.log("Search plan built successfully:", built);
       setPlan(built);
       setError(null); // Clear any previous errors
     } catch (e: any) {
+      // Still wait for minimum time even on error
+      await minimumLoadingTime;
       console.error("Failed to build search plan:", e);
       setError(e.message || "An unexpected error occurred. Please try again.");
       setPlan({ prompts: [] }); // Ensure plan is not null
     } finally {
+      console.log("Transitioning to recommendations page...");
       setPage("recommendations");
     }
   };
 
   let content: React.ReactNode;
+
+  // Debug logging
+  console.log("Current page:", page);
 
   switch (page) {
     case "opener":
@@ -87,6 +103,7 @@ export const App: React.FC = () => {
       break;
 
     case "loading":
+      console.log("Rendering LoadingPage");
       content = <LoadingPage />;
       break;
 

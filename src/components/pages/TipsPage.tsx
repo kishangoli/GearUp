@@ -80,13 +80,19 @@ export const TipsPage: React.FC<TipsPageProps> = ({ onBack, context, onBrowseMor
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="pt-12 px-4 pb-6 flex items-center justify-between">
-        <button onClick={onBack} className="flex items-center text-gray-600 hover:text-gray-800">
-          <span className="text-lg mr-1">←</span>
-          <span className="text-sm">Back</span>
+      
+      {/* Sticky Back Button */}
+      <div className="fixed top-4 left-4 z-50">
+        <button
+          onClick={onBack}
+          className="flex items-center justify-center w-12 h-12 text-gray-800 hover:text-gray-600 transition-all duration-200"
+        >
+          <span className="text-xl">←</span>
         </button>
+      </div>
+
+      <div className="pt-12 px-4 pb-6 flex items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-900">Tips for your picks</h1>
-        <div className="w-10" />
       </div>
 
       {/* Saved products state (SDK) */}

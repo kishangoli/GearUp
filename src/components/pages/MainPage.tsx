@@ -411,18 +411,18 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-h-0">
 
-        {/* Header Section with Back Button */}
-        <div className="px-4 pt-8 pb-1">
-          <div className="flex items-center justify-between mb-1">
-            <button
-              onClick={onBack}
-              className="flex items-center justify-center w-10 h-10 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200"
-            >
-              <span className="text-xl">←</span>
-            </button>
-            <div className="flex-1"></div>
-          </div>
-          
+        {/* Sticky Back Button */}
+        <div className="fixed top-4 left-4 z-50">
+          <button
+            onClick={onBack}
+            className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
+          >
+            <span className="text-xl">←</span>
+          </button>
+        </div>
+
+        {/* Header Section */}
+        <div className="px-4 pt-8 pb-1">          
           <div className="text-center">
             <div className="floating-element">
               <img 

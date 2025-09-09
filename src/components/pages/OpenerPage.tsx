@@ -30,16 +30,12 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       `}</style>
       
       <div className="min-h-screen flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40] relative">
-        {/* Video Background */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
+        {/* GIF Background */}
+        <img
+          src="/running.gif"
+          alt=""
           className="absolute inset-0 w-full h-full object-cover z-0"
-        >
-          <source src="/running.mp4" type="video/mp4" />
-        </video>
+        />
         
         {/* Translucent Overlay */}
         <div className="absolute inset-0 bg-black/50 z-10"></div>
