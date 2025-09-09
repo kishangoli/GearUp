@@ -458,7 +458,12 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
               <div className="text-sm text-gray-300 leading-relaxed">
                 Your gear collection is empty.
                 <br />
-                <span className="text-white font-medium">Go back to add more gear!</span>
+                <button 
+                  onClick={onBack}
+                  className="text-white font-medium hover:text-blue-300 transition-colors duration-200 cursor-pointer underline"
+                >
+                  Go back to add more gear!
+                </button>
               </div>
             </div>
           </motion.section>
