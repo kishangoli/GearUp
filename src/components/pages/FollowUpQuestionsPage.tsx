@@ -599,7 +599,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
               className="flex items-center gap-2 px-4 py-2 bg-purple-600/80 backdrop-blur-sm rounded-xl text-white text-sm font-medium hover:bg-purple-700/80 transition-all duration-200 shadow-lg"
             >
               <span className="text-lg">🎲</span>
-              <span>Randomize</span>
+              <span>Auto</span>
             </button>
           </div>
 

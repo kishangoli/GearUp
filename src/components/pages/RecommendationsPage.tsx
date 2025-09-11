@@ -2,13 +2,11 @@ import React from "react";
 import { useProductSearch, ProductCard } from "@shopify/shop-minis-react";
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
-import { useLongPress } from "use-long-press";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserAnswers } from "../context/UserAnswersContext";
 import { generatePromptBlurbsClient } from "../fal-usage/fal";
 import { useVisionBoard } from "../context/VisionBoardContext";
-import LongPressToAdd from "../ui/LongPressToAdd";
 
 type Prompt = { label: string; query: string };
 
@@ -26,8 +24,60 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
   loading,
   onViewVisionBoard,
 }) => {
-  const { items } = useVisionBoard();
+  const { items, add } = useVisionBoard();
   const { answers } = useUserAnswers();
+
+  // Auto-select functionality
+  const [isAutoSelecting, setIsAutoSelecting] = React.useState(false);
+  const [hasAutoSelected, setHasAutoSelected] = React.useState(false);
+  const [categoryProducts, setCategoryProducts] = React.useState<Record<string, any[]>>({});
+
+  // Function to register products from each category
+  const registerCategoryProducts = React.useCallback((promptLabel: string, products: any[]) => {
+    setCategoryProducts(prev => ({
+      ...prev,
+      [promptLabel]: products
+    }));
+  }, []);
+
+  const handleAutoSelect = React.useCallback(async () => {
+    if (!plan?.prompts || isAutoSelecting || hasAutoSelected) return;
+    
+    setIsAutoSelecting(true);
+    
+    try {
+      let totalItemsAdded = 0;
+      
+      // For each prompt/category, select 2-3 random items
+      for (const prompt of plan.prompts) {
+        const availableProducts = categoryProducts[prompt.label] || [];
+        
+        if (availableProducts.length > 0) {
+          // Select 2-3 random items from this category
+          const itemsToSelect = Math.floor(Math.random() * 2) + 2; // 2-3 items
+          const shuffled = [...availableProducts].sort(() => 0.5 - Math.random());
+          const selectedItems = shuffled.slice(0, Math.min(itemsToSelect, availableProducts.length));
+          
+          // Add each selected item to vision board
+          selectedItems.forEach(item => {
+            add(item);
+            totalItemsAdded++;
+          });
+        }
+      }
+      
+      // Show success notification and mark as used
+      if (totalItemsAdded > 0) {
+        setAddedToast(true);
+        setHasAutoSelected(true); // Disable button after successful use
+        setTimeout(() => setAddedToast(false), 2000);
+      }
+    } catch (error) {
+      console.error('Auto-select failed:', error);
+    } finally {
+      setIsAutoSelecting(false);
+    }
+  }, [plan?.prompts, isAutoSelecting, hasAutoSelected, add, categoryProducts]);
 
   // ---------- one-liner blurbs ----------
   const [blurbs, setBlurbs] = React.useState<Record<string, string>>({});
@@ -88,18 +138,6 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
   // ---------- easter egg ----------
   const [showNumberSpam, setShowNumberSpam] = React.useState(false);
   const [numbers, setNumbers] = React.useState<Array<{ id: number; x: number; y: number; number: string }>>([]);
-
-  // ---------- long press announcement ----------
-  const [showLongPressAnnouncement, setShowLongPressAnnouncement] = React.useState(false);
-
-  // Show announcement every time they reach recommendations
-  React.useEffect(() => {
-    if (!loading && plan?.prompts?.length) {
-      setTimeout(() => {
-        setShowLongPressAnnouncement(true);
-      }, 1000); // Show after 1 second delay
-    }
-  }, [loading, plan]);
 
   const triggerNumberSpam = React.useCallback(() => {
     setShowNumberSpam(true);
@@ -501,85 +539,6 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         );
       })}
 
-      {/* Long Press Announcement Modal */}
-      <AnimatePresence>
-        {showLongPressAnnouncement && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 300, 
-                damping: 25,
-                delay: 0.1 
-              }}
-              className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl max-w-sm w-full p-6 text-center"
-            >
-              {/* Animated Icon */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 200, 
-                  delay: 0.3 
-                }}
-                className="mb-4"
-              >
-                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                  <img
-                    src="/press_icon.png"
-                    alt="Press icon"
-                    className="w-8 h-8 object-contain filter brightness-0 invert"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Title */}
-              <motion.h3 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-xl font-bold text-white mb-2"
-              >
-                Long Press to Add!
-              </motion.h3>
-
-              {/* Description */}
-              <motion.p 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="text-gray-300 text-sm mb-6 leading-relaxed"
-              >
-                Hold down on any product to watch it fly to your gear collection! 
-              </motion.p>
-
-              {/* Action Button */}
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                onClick={() => setShowLongPressAnnouncement(false)}
-                className="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 active:scale-95"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Got it! Let's shop
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Easter Egg Number Spam */}
       {showNumberSpam && (
         <div className="fixed inset-0 pointer-events-none z-[9999]">
@@ -609,7 +568,28 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         </button>
       </div>
 
-      <div className="pt-12 px-4 pb-6 flex items-center justify-center">
+      {/* Auto-Select Button */}
+      <div className="fixed top-4 right-4 z-50">
+        <button
+          onClick={handleAutoSelect}
+          disabled={isAutoSelecting || hasAutoSelected || !plan?.prompts?.length}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-xl shadow-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isAutoSelecting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <span>Selecting...</span>
+            </>
+          ) : (
+            <>
+              <span className="text-lg">✨</span>
+              <span>Auto Gear-Up</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="pt-20 px-4 pb-6 flex items-center justify-center">
         <h1 className="text-2xl font-bold text-white">Your Recommendations</h1>
       </div>
 
@@ -665,17 +645,14 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
                 className="flex-1"
               >
                 <div 
-                  {...useLongPress(triggerNumberSpam, {
-                    threshold: 500,
-                    cancelOnMovement: 15,
-                  })()}
+                  onClick={triggerNumberSpam}
                   className="bg-blue-500/10 backdrop-blur-sm rounded-xl p-4 border border-blue-400/20 cursor-pointer select-none h-[72px] flex items-center"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-xl">💡</span>
                     <div>
                       <p className="text-sm font-medium text-blue-200">Quick Tip</p>
-                      <p className="text-xs text-blue-300/80">Long press to add to your gear. </p>
+                      <p className="text-xs text-blue-300/80">Tap the plus button to add gear.</p>
                     </div>
                   </div>
                 </div>
@@ -901,17 +878,14 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
             transition={{ duration: 0.4, delay: 0.15, ease: "easeInOut" }}
           >
             <div 
-              {...useLongPress(triggerNumberSpam, {
-                threshold: 500,
-                cancelOnMovement: 15,
-              })()}
+              onClick={triggerNumberSpam}
               className="bg-blue-500/10 backdrop-blur-sm rounded-xl p-4 border border-blue-400/20 cursor-pointer select-none"
             >
               <div className="flex items-center gap-3">
                 <span className="text-xl">💡</span>
                 <div>
                   <p className="text-sm font-medium text-blue-200">Quick Tip</p>
-                  <p className="text-xs text-blue-300/80">Long press any item to add it to your vision board</p>
+                  <p className="text-xs text-blue-300/80">Tap any item to add it to your vision board</p>
                 </div>
               </div>
             </div>
@@ -937,6 +911,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
               blurb={blurbsLoading ? "__loading__" : (blurbs[p.label] ?? "")}
               onAnyItemAdded={notifyAdded}
               priceFilter={priceRange}
+              onProductsLoaded={registerCategoryProducts}
             />
           ))}
       </div>
@@ -972,7 +947,8 @@ const PromptRow: React.FC<{
   blurb?: string;
   onAnyItemAdded: (product: any, element: HTMLElement | null) => void;
   priceFilter: { min: number; max: number };
-}> = ({ prompt, blurb, onAnyItemAdded, priceFilter }) => {
+  onProductsLoaded?: (promptLabel: string, products: any[]) => void;
+}> = ({ prompt, blurb, onAnyItemAdded, priceFilter, onProductsLoaded }) => {
   const { add } = useVisionBoard();
   const [fetchCount, setFetchCount] = React.useState(20);
   const raw: any = useProductSearch({ query: prompt.query, first: fetchCount });
@@ -1011,7 +987,11 @@ const PromptRow: React.FC<{
   const [products, setProducts] = React.useState<any[]>([]);
   React.useEffect(() => {
     setProducts(results);
-  }, [resultsSig]);
+    // Notify parent component about products for auto-select functionality
+    if (onProductsLoaded && results.length > 0) {
+      onProductsLoaded(prompt.label, results);
+    }
+  }, [resultsSig, onProductsLoaded, prompt.label, results]);
 
   // Filter products by price
   const filteredProducts = React.useMemo(() => {
@@ -1141,30 +1121,21 @@ const PromptRow: React.FC<{
                     transition={{ type: "spring", stiffness: 520, damping: 36, mass: 0.8 }}
                     className="embla__slide"
                   >
-                    <LongPressToAdd
-                      product={prod}
-                      onAdded={(product, element) => {
-                        removeById(key);
-                        onAnyItemAdded(product, element);
-                      }}
-                    >
-                      <div className="relative w-full h-full">
-                        <ProductCard product={prod} />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent long-press from firing
-                            // Action for this button can be added here later
-                            add(prod);
-                            removeById(key);
-                            onAnyItemAdded(prod, e.currentTarget);
-                          }}
-                          className="absolute bottom-15 right-3 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold hover:bg-black/70 active:scale-90 transition-all duration-200"
-                          aria-label="Quick add"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </LongPressToAdd>
+                    <div className="relative w-full h-full">
+                      <ProductCard product={prod} />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          add(prod);
+                          removeById(key);
+                          onAnyItemAdded(prod, e.currentTarget);
+                        }}
+                        className="absolute bottom-15 right-3 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold hover:bg-black/70 active:scale-90 transition-all duration-200"
+                        aria-label="Quick add"
+                      >
+                        +
+                      </button>
+                    </div>
                   </motion.div>
                 );
               })}

@@ -418,7 +418,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
             }}
           >
             <SwipeStack
-              items={items}
+              items={items.slice(0, 4)} // Show max 5 cards to reduce clutter
               keyExtractor={keyOf}
               width={220}
               gapY={12}
