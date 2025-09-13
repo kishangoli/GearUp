@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { buildCartTipsClient } from "../fal-usage/fal";
 import { tipsCache } from "../../cache/tipsCache";           // shared cache filled by Warmup
 import { inferCategory } from "../utils/tipsPrefetch";     // same rules as warmup
-import {Toaster, toast} from "sonner";
+import { ToastProvider, SuccessToast } from '../ui/Toast';
 
 /* ───────────────────────────── Helpers ───────────────────────────── */
 
@@ -44,6 +44,14 @@ type VisionBoardPageProps = { onBack: () => void };
 export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
   const { items, remove, clear } = useVisionBoard();
   const { addToCart } = useShopCartActions();
+  const [toastOpen, setToastOpen] = React.useState(false);
+  const [toastConfig, setToastConfig] = React.useState<{
+    title: string;
+    variant: 'success' | 'info' | 'error';
+  }>({
+    title: "Added to cart!",
+    variant: 'success'
+  });
 
   // lock page scroll while here
   React.useEffect(() => {
@@ -100,29 +108,31 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
     const idx = items.findIndex((p, i) => keyOf(p, i) === key);
     remove(key); // remove immediately so empty-state updates
     if (idx === -1) return;
+    
+    // Show success toast immediately
+    setToastConfig({
+      title: "Added to cart!",
+      variant: 'success'
+    });
+    setToastOpen(true);
+    
     const product = items[idx];
     const { productId, productVariantId } = pickIds(product);
     if (!productId || !productVariantId) return;
+    
     try {
+      // Add to cart in the background
       await addToCart({ productId, productVariantId, quantity: 1 });
-      toast.success("Item added to cart!", {
-        position: "top-center",
-        style: {
-          background: "rgba(34, 197, 94, 0.9)",
-          backdropFilter: "blur(16px)",
-          border: "1px solid rgba(34, 197, 94, 0.3)",
-          borderRadius: "12px",
-          color: "white",
-          fontSize: "14px",
-          fontWeight: "500",
-          padding: "12px 16px",
-          marginTop: "80px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-        },
-        duration: 2000
-      });
-    } catch {
-      /* non-blocking */
+    } catch (error) {
+      // If cart addition fails, show error toast
+      setToastOpen(false); // Close success toast
+      setTimeout(() => {
+        setToastConfig({
+          title: "Couldn't add to cart",
+          variant: 'error'
+        });
+        setToastOpen(true);
+      }, 300); // Small delay to ensure previous toast is gone
     }
   };
 
@@ -315,217 +325,301 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
             0 8px 32px rgba(0, 0, 0, 0.1),
             inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
+
+        /* Toast Animations */
+        @keyframes hide {
+          from {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(-100%);
+          }
+        }
+
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes swipeOut {
+          from {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(-100%);
+          }
+        }
+
+        .animate-hide {
+          animation: hide 200ms ease-in forwards;
+        }
+
+        .animate-slideIn {
+          animation: slideIn 300ms ease-out forwards;
+        }
+
+        .animate-swipeOut {
+          animation: swipeOut 200ms ease-out forwards;
+        }
+
+        /* Toast Animations */
+        @keyframes toast-hide {
+          from {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(100%);
+          }
+        }
+
+        @keyframes toast-slide-in {
+          from {
+            opacity: 0;
+            transform: translateY(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes toast-swipe-out {
+          from {
+            transform: translateY(var(--radix-toast-swipe-end-y));
+          }
+          to {
+            transform: translateY(100%);
+          }
+        }
+
+        .animate-toast-hide {
+          animation: toast-hide 200ms ease-in forwards;
+        }
+
+        .animate-toast-slide-in {
+          animation: toast-slide-in 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-toast-swipe-out {
+          animation: toast-swipe-out 200ms ease-out forwards;
+        }
       `}</style>
       <div className="relative min-h-screen animated-bg">
-        <Toaster 
-          position="top-center"
-          toastOptions={{
-            style: {
-              background: "rgba(255, 255, 255, 0.1)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              borderRadius: "12px",
-              color: "white",
-              fontSize: "14px",
-              fontWeight: "500"
-            }
-          }}
-        />
-      
-      {/* Sticky Back Button */}
-      <div className="fixed top-4 left-4 z-50">
-        <button 
-          onClick={onBack} 
-          className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
-        >
-          <span className="text-xl">←</span>
-        </button>
-      </div>
-
-      {/* Header */}
-      <div className="pt-12 px-4 pb-6 flex items-center justify-between">
-        <div className="w-10" /> {/* Spacer for centering */}
-        <h1 className="text-2xl font-bold text-white flex items-center">Gear Up & Go</h1>
-        <button
-          onClick={clear}
-          className="text-sm text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
-        >
-          Clear
-        </button>
-      </div>
-
-      {/* Always-visible dock icons */}
-      <div>
-        <motion.div
-          ref={leftRef}
-          className="fixed left-3 top-[35%] -translate-y-1/2 z-[1000]
-                     trash-icon floating-element
-                     flex items-center justify-center"
-          animate={
-            pulseSide === "left"
-              ? { scale: [1, 1.25, 1] }
-              : { scale: hoverSide === "left" ? 1.1 : 1 }
-          }
-          transition={{ duration: pulseSide === "left" ? 0.22 : 0.15 }}
-        >
-          <TrashIcon className="w-7 h-7 text-red-400" />
-        </motion.div>
-
-        <motion.div
-          ref={rightRef}
-          className="fixed right-3 top-[35%] -translate-y-1/2 z-[1000]
-                     cart-icon floating-element
-                     flex items-center justify-center"
-          animate={
-            pulseSide === "right"
-              ? { scale: [1, 1.25, 1] }
-              : { scale: hoverSide === "right" ? 1.1 : 1 }
-          }
-          transition={{ duration: pulseSide === "right" ? 0.22 : 0.15 }}
-        >
-          <CartIcon className="w-7 h-7 text-emerald-400" />
-        </motion.div>
-      </div>
-
-      {/* Empty vs stack + inline tips just beneath */}
-      {items.length === 0 ? (
-        <div className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2">
-          {/* Empty state card matching regular content card size */}
-          <div 
-            className="bg-gray-400/20 backdrop-blur-sm rounded-xl border border-gray-400/30"
-            style={{ 
-              width: 220, 
-              height: 300,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <div className="text-gray-400/60 text-4xl">∅</div>
-          </div>
-        </div>
-      ) : (
-        <div
-          className="absolute left-1/2 top-[15%] -translate-x-1/2 -translate-y-1/2
-                     flex flex-col items-center"
-        >
-          <div 
-            className="transition-all duration-300"
-            style={{ 
-              // Ensure the animation container has proper styling
-              position: 'relative',
-              zIndex: 10 
-            }}
-          >
-            <SwipeStack
-              items={items.slice(0, 4)} // Show max 5 cards to reduce clutter
-              keyExtractor={keyOf}
-              width={220}
-              gapY={12}
-              gapScale={0.05}
-              dismissOffset={120}
-              dismissVelocity={700}
-              onSwipeLeft={handleSwipeLeft}
-              onSwipeRight={handleSwipeRight}
-              onTopChange={setTop}
-              dropTargets={{
-                getRects,
-                onHover: setHoverSide,
-                onDropPulse: triggerPulse,
-                hoverPadding: 24,
-              }}
-            />
+        <ToastProvider>
+          <SuccessToast 
+            open={toastOpen}
+            setOpen={setToastOpen}
+            title={toastConfig.title}
+            variant={toastConfig.variant}
+          />
+        
+          {/* Sticky Back Button */}
+          <div className="fixed top-4 left-4 z-50">
+            <button 
+              onClick={onBack} 
+              className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
+            >
+              <span className="text-xl">←</span>
+            </button>
           </div>
 
-        </div>
-      )}
+          {/* Header */}
+          <div className="pt-12 px-4 pb-6 flex items-center justify-between">
+            <div className="w-10" /> {/* Spacer for centering */}
+            <h1 className="text-2xl font-bold text-white flex items-center">Gear Up & Go</h1>
+            <button
+              onClick={clear}
+              className="text-sm text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
+            >
+              Clear
+            </button>
+          </div>
 
-      {/* ▼▼▼ Always-visible TIPS section (positioned absolutely) ▼▼▼ */}
-      <AnimatePresence mode="popLayout">
-        {items.length === 0 ? (
-          <motion.section
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.99 }}
-            transition={{ duration: 0.22 }}
-            className="
-              fixed bottom-50 left-0 right-0 z-[900]
-              w-screen px-6
-              py-2
-            "
-          >
-            <div className="max-w-xs mx-auto text-center">
-              <div className="text-sm text-gray-300 leading-relaxed">
-                Your gear collection is empty.
-                <br />
-                <button 
-                  onClick={onBack}
-                  className="text-white font-medium hover:text-blue-300 transition-colors duration-200 cursor-pointer underline"
-                >
-                  Go back to add more gear!
-                </button>
+          {/* Always-visible dock icons */}
+          <div>
+            <motion.div
+              ref={leftRef}
+              className="fixed left-3 top-[35%] -translate-y-1/2 z-[1000]
+                        trash-icon floating-element
+                        flex items-center justify-center"
+              animate={
+                pulseSide === "left"
+                  ? { scale: [1, 1.25, 1] }
+                  : { scale: hoverSide === "left" ? 1.1 : 1 }
+              }
+              transition={{ duration: pulseSide === "left" ? 0.22 : 0.15 }}
+            >
+              <TrashIcon className="w-7 h-7 text-red-400" />
+            </motion.div>
+
+            <motion.div
+              ref={rightRef}
+              className="fixed right-3 top-[35%] -translate-y-1/2 z-[1000]
+                        cart-icon floating-element
+                        flex items-center justify-center"
+              animate={
+                pulseSide === "right"
+                  ? { scale: [1, 1.25, 1] }
+                  : { scale: hoverSide === "right" ? 1.1 : 1 }
+              }
+              transition={{ duration: pulseSide === "right" ? 0.22 : 0.15 }}
+            >
+              <CartIcon className="w-7 h-7 text-emerald-400" />
+            </motion.div>
+          </div>
+
+          {/* Empty vs stack + inline tips just beneath */}
+          {items.length === 0 ? (
+            <div className="absolute left-1/2 top-[35%] -translate-x-1/2 -translate-y-1/2">
+              {/* Empty state card matching regular content card size */}
+              <div 
+                className="bg-gray-400/20 backdrop-blur-sm rounded-xl border border-gray-400/30"
+                style={{ 
+                  width: 220, 
+                  height: 300,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <div className="text-gray-400/60 text-4xl">∅</div>
               </div>
             </div>
-          </motion.section>
-        ) : top && (
-          <motion.section
-            key={top.key}
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.99 }}
-            transition={{ duration: 0.22 }}
-            className="
-              fixed bottom-13 left-0 right-0 z-[900]
-              w-screen px-6
-              py-2
-            "
-          >
-            {/* Header row: 'Tips & Tricks' */}
-            <div className="flex items-center justify-center mb-3">
-              <div className="text-xs uppercase tracking-wider text-gray-300 text-center font-medium">
-                Tips & Tricks
+          ) : (
+            <div
+              className="absolute left-1/2 top-[15%] -translate-x-1/2 -translate-y-1/2
+                        flex flex-col items-center"
+            >
+              <div 
+                className="transition-all duration-300"
+                style={{ 
+                  // Ensure the animation container has proper styling
+                  position: 'relative',
+                  zIndex: 10 
+                }}
+              >
+                <SwipeStack
+                  items={items.slice(0, 4)} // Show max 5 cards to reduce clutter
+                  keyExtractor={keyOf}
+                  width={220}
+                  gapY={12}
+                  gapScale={0.05}
+                  dismissOffset={120}
+                  dismissVelocity={700}
+                  onSwipeLeft={handleSwipeLeft}
+                  onSwipeRight={handleSwipeRight}
+                  onTopChange={setTop}
+                  dropTargets={{
+                    getRects,
+                    onHover: setHoverSide,
+                    onDropPulse: triggerPulse,
+                    hoverPadding: 24,
+                  }}
+                />
               </div>
-            </div>
 
-            {/* Always-visible content */}
-            <div className="max-w-sm mx-auto flex-1 flex flex-col">
-              {tipsState.loading ? (
-                <div className="flex items-center justify-center flex-1 text-xs text-gray-300">
-                  <div className="animate-pulse">Generating ideas…</div>
+            </div>
+          )}
+
+          {/* ▼▼▼ Always-visible TIPS section (positioned absolutely) ▼▼▼ */}
+          <AnimatePresence mode="popLayout">
+            {items.length === 0 ? (
+              <motion.section
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.99 }}
+                transition={{ duration: 0.22 }}
+                className="
+                  fixed bottom-50 left-0 right-0 z-[900]
+                  w-screen px-6
+                  py-2
+                "
+              >
+                <div className="max-w-xs mx-auto text-center">
+                  <div className="text-sm text-gray-300 leading-relaxed">
+                    Your gear collection is empty.
+                    <br />
+                    <button 
+                      onClick={onBack}
+                      className="text-white font-medium hover:text-blue-300 transition-colors duration-200 cursor-pointer underline"
+                    >
+                      Go back to add more gear!
+                    </button>
+                  </div>
                 </div>
-              ) : tipsState.error ? (
-                <div className="text-xs text-red-400 text-center flex-1 flex items-center justify-center">{tipsState.error}</div>
-              ) : tipsState.tips && Array.isArray(tipsState.tips.tips) && tipsState.tips.tips.length > 0 ? (
-                <div className="space-y-1.5 flex-1 flex flex-col">
-                  {tipsState.tips.tips.slice(0, 3).map((raw: any, i: number) => {
-                    const t = normalizeTip(raw);
-                    return (
-                      <div key={i} className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 border border-white/20 flex-1 flex flex-col justify-center">
-                        <div className="text-xs font-semibold text-white mb-1 leading-tight text-center">
-                          {i + 1}. {t.title}
-                        </div>
-                        {t.bullets.length > 0 && (
-                          <div className="space-y-0.5 mt-1">
-                            {t.bullets.map((b, j) => (
-                              <div key={j} className="text-[10px] text-gray-300 leading-relaxed text-center">
-                                • {b}
+              </motion.section>
+            ) : top && (
+              <motion.section
+                key={top.key}
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.99 }}
+                transition={{ duration: 0.22 }}
+                className="
+                  fixed bottom-13 left-0 right-0 z-[900]
+                  w-screen px-6
+                  py-2
+                "
+              >
+                {/* Header row: 'Tips & Tricks' */}
+                <div className="flex items-center justify-center mb-3">
+                  <div className="text-xs uppercase tracking-wider text-gray-300 text-center font-medium">
+                    Tips & Tricks
+                  </div>
+                </div>
+
+                {/* Always-visible content */}
+                <div className="max-w-sm mx-auto flex-1 flex flex-col">
+                  {tipsState.loading ? (
+                    <div className="flex items-center justify-center flex-1 text-xs text-gray-300">
+                      <div className="animate-pulse">Generating ideas…</div>
+                    </div>
+                  ) : tipsState.error ? (
+                    <div className="text-xs text-red-400 text-center flex-1 flex items-center justify-center">{tipsState.error}</div>
+                  ) : tipsState.tips && Array.isArray(tipsState.tips.tips) && tipsState.tips.tips.length > 0 ? (
+                    <div className="space-y-1.5 flex-1 flex flex-col">
+                      {tipsState.tips.tips.slice(0, 3).map((raw: any, i: number) => {
+                        const t = normalizeTip(raw);
+                        return (
+                          <div key={i} className="bg-white/10 backdrop-blur-sm rounded-lg p-2.5 border border-white/20 flex-1 flex flex-col justify-center">
+                            <div className="text-xs font-semibold text-white mb-1 leading-tight text-center">
+                              {i + 1}. {t.title}
+                            </div>
+                            {t.bullets.length > 0 && (
+                              <div className="space-y-0.5 mt-1">
+                                {t.bullets.map((b, j) => (
+                                  <div key={j} className="text-[10px] text-gray-300 leading-relaxed text-center">
+                                    • {b}
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            )}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-400 text-center flex-1 flex items-center justify-center">No tips for this product yet.</div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-xs text-gray-400 text-center flex-1 flex items-center justify-center">No tips for this product yet.</div>
-              )}
-            </div>
-          </motion.section>
-        )}
-      </AnimatePresence>
-      {/* ▲▲▲ Always-visible TIPS section ▲▲▲ */}
-    </div>
+              </motion.section>
+            )}
+          </AnimatePresence>
+          {/* ▲▲▲ Always-visible TIPS section ▲▲▲ */}
+        </ToastProvider>
+      </div>
     </>
   );
 }
@@ -539,7 +633,7 @@ function TrashIcon({ className = "" }: { className?: string }) {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M19 7l-1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 7m3 0V5a2 2 0 0 1 2-2h4a2 2 0 1 1 2 2v2M4 7h16"
+        d="M19 7l-1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 7m3 0V5a2 2 0 0 1 2-2h4a2 2 0 1 1-2 2v2M4 7h16"
       />
     </svg>
   );
