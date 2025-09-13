@@ -1,1 +1,46 @@
 @import "@shopify/shop-minis-react/styles";
+
+@keyframes hide {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes swipeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+  }
+  
+  .animate-hide {
+    animation: hide 200ms ease-in;
+  }
+  
+  .animate-slideIn {
+    animation: slideIn 200ms ease-out;
+  }
+  
+  .animate-swipeOut {
+    animation: swipeOut 200ms ease-out;
+  }

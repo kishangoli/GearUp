@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUserAnswers } from "../context/UserAnswersContext";
 import { generatePromptBlurbsClient } from "../fal-usage/fal";
 import { useVisionBoard } from "../context/VisionBoardContext";
+import { ToastProvider, SuccessToast } from '../ui/Toast';
 
 type Prompt = { label: string; query: string };
 
@@ -40,6 +41,15 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
     }));
   }, []);
 
+  const [toastOpen, setToastOpen] = React.useState(false);
+  const [toastConfig, setToastConfig] = React.useState<{
+    title: string;
+    variant: 'success' | 'info';
+  }>({
+    title: "Added to your gear!",
+    variant: 'success'
+  });
+
   const handleAutoSelect = React.useCallback(async () => {
     if (!plan?.prompts || isAutoSelecting || hasAutoSelected) return;
     
@@ -66,11 +76,15 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         }
       }
       
-      // Show success notification and mark as used
+      // Show info toast instead of success toast
       if (totalItemsAdded > 0) {
-        setAddedToast(true);
+        setToastConfig({
+          title: "We generated picks for you!",
+          variant: 'info'
+        });
+        setToastOpen(true);
         setHasAutoSelected(true); // Disable button after successful use
-        setTimeout(() => setAddedToast(false), 2000);
+        setTimeout(() => setToastOpen(false), 2000);
       }
     } catch (error) {
       console.error('Auto-select failed:', error);
@@ -88,7 +102,6 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
   );
 
   // ---------- global "added" toast ----------
-  const [addedToast, setAddedToast] = React.useState(false);
   const [flyingItems, setFlyingItems] = React.useState<Array<{
     id: string;
     startX: number;
@@ -123,12 +136,13 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
       setTimeout(() => {
         setFlyingItems(prev => prev.filter(item => item.id !== flyingId));
       }, 1200);
-    } else {
-      // Fallback to toast if no element position available
-      setAddedToast(true);
-      const t = setTimeout(() => setAddedToast(false), 1100);
-      return () => clearTimeout(t);
     }
+    
+    setToastConfig({
+      title: "Added to your gear!",
+      variant: 'success'
+    });
+    setToastOpen(true);
   }, []);
 
   // ---------- price filter ----------
@@ -481,24 +495,14 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
       `}</style>
 
       <div className="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 pb-20">
-      {/* GLOBAL TOAST (top-center) */}
-      <AnimatePresence>
-        {addedToast && (
-            <motion.div
-            key="added-toast"
-            initial={{ opacity: 0, y: -12, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.98 }}
-            transition={{ duration: 0.22 }}
-            className="fixed left-1/2 -translate-x-1/2 top-4 z-[70]"
-            aria-live="polite"
-            >
-            <div className="px-4 py-2.5 rounded-xl bg-green-600 text-white text-sm font-semibold shadow-lg ring-1 ring-green-500/30">
-                Added to vision board
-            </div>
-            </motion.div>
-        )}
-        </AnimatePresence>
+        <ToastProvider>
+          <SuccessToast 
+            open={toastOpen}
+            setOpen={setToastOpen}
+            title={toastConfig.title}
+            variant={toastConfig.variant}
+          />
+        </ToastProvider>
 
       {/* Flying Items Animation */}
       {flyingItems.map((item) => {

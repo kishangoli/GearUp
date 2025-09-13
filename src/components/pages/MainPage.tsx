@@ -489,7 +489,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
                   duration={4000}
                   containerClassName="h-full w-full"
                   borderClassName="opacity-70 bg-gradient-to-r from-blue-400 to-purple-500"
-                  className={`h-full w-full rounded-2xl font-semibold transition-colors duration-300 bg-slate-800 text-white touch-feedback ${isCompactView ? 'text-base' : 'text-lg'}`}
+                  className={`h-full w-full rounded-2xl font-semibold transition-colors duration-300 bg-slate-800 text-white touch-feedback ${isCompactView ? 'text-base' : 'text-xl'}`}
                 >
                   Continue
                 </Button>
