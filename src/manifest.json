@@ -7,6 +7,5 @@
   "trusted_domains": [
     "queue.fal.run",
     "fal.run"
-  ],
-  "handle": "gearup"
+  ]
 }
