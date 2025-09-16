@@ -30,37 +30,16 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
           }
         }
 
-        /* hide iOS/Android play buttons */
-        video::-webkit-media-controls,
-        video::-webkit-media-controls-start-playback-button,
-        video::-webkit-media-controls-overlay-play-button {
-          display: none !important;
-          opacity: 0 !important;
-          pointer-events: none !important;
-        }
+        
       `}</style>
 
       <div className="min-h-screen relative overflow-hidden flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40]">
       
-      <video
+      <img
+        src="/running.gif"
+        alt="Running background"
         className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
-        poster="/running-poster.jpg"
-        autoPlay
-        loop
-        muted
-        playsInline
-        controls={false}
-        disableRemotePlayback
-        preload="auto"
-        src="/running-720.mp4"
-        onLoadedData={() => setVideoReady(true)}
-        style={{
-          opacity: videoReady ? 1 : 0,
-          transition: 'opacity 0.5s ease-in-out',
-        }}
-      >
-        <source src="/running-720.webm" type="video/webm" />
-      </video>
+      />
       
       <div className="absolute inset-0 bg-black/50 z-10"></div>
       
