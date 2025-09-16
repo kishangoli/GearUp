@@ -32,7 +32,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       <div className="min-h-screen flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40] relative">
         {/* GIF Background */}
         <img
-          src="/running.gif"
+          src="https://archive.org/download/running_202509/running.gif"
           alt=""
           className="absolute inset-0 w-full h-full object-cover z-0"
         />
