@@ -8,7 +8,7 @@
     "start": "shop-minis dev"
   },
   "devDependencies": {
-    "@shopify/shop-minis-cli": "0.0.178",
+    "@shopify/shop-minis-cli": "^0.0.187",
     "@tailwindcss/vite": "^4.1.8",
     "@types/long": "^4.0.2",
     "@types/react": "^18.2.43",
