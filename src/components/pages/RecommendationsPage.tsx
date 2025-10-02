@@ -232,15 +232,15 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           font-weight: 600 !important;
         }
         
-        /* Force all text content to be white */
-        .embla__slide * {
+        /* Force all carousel slide text content to be white */
+        .carousel-slide * {
           color: white !important;
         }
         
-        /* Override any inherited dark colors */
-        .embla__slide h1, .embla__slide h2, .embla__slide h3, 
-        .embla__slide h4, .embla__slide h5, .embla__slide h6,
-        .embla__slide p, .embla__slide span, .embla__slide div {
+        /* Override any inherited dark colors in slides */
+        .carousel-slide h1, .carousel-slide h2, .carousel-slide h3, 
+        .carousel-slide h4, .carousel-slide h5, .carousel-slide h6,
+        .carousel-slide p, .carousel-slide span, .carousel-slide div {
           color: white !important;
         }
         
@@ -318,9 +318,9 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         }
 
         /* Fix image distortion in product cards */
-        .shopify-product-card img,
-        .shopify-product-card picture img,
-        .embla__slide img,
+  .shopify-product-card img,
+  .shopify-product-card picture img,
+  .carousel-slide img,
         [class*="product-card"] img,
         [class*="ProductCard"] img,
         [data-testid*="product"] img {
@@ -334,10 +334,10 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         }
 
         /* Ensure product card containers maintain proper aspect ratio */
-        .shopify-product-card,
-        .embla__slide > div,
-        [class*="product-card"],
-        [class*="ProductCard"] {
+  .shopify-product-card,
+  .carousel-slide > div,
+  [class*="product-card"],
+  [class*="ProductCard"] {
           aspect-ratio: auto !important;
           height: auto !important;
           min-height: 200px !important;
@@ -462,7 +462,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           perspective: 1000px;
         }
 
-        /* Enhanced Embla Carousel Spacing - Edge to Edge */
+  /* Enhanced Carousel Spacing - Edge to Edge */
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
@@ -1185,7 +1185,7 @@ const PromptRow: React.FC<{
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -16, scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 520, damping: 36, mass: 0.8 }}
-                  className="flex-shrink-0 w-[160px] max-w-[50%]"
+                  className="carousel-slide flex-shrink-0 w-[160px] max-w-[50%]"
                 >
                   <div className="relative w-full h-full">
                     <ProductCard product={prod} />
