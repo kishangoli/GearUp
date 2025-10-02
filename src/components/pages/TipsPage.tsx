@@ -1,6 +1,6 @@
 // src/pages/TipsPage.tsx
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { useSavedProducts } from "@shopify/shop-minis-react";
 import { buildCartTipsClient, type CartItemInput, type CartTips } from "../fal-usage/fal";
 

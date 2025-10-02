@@ -2,7 +2,7 @@ import React from "react";
 import SwipeStack from "../ui/SwipeStack";
 import { useVisionBoard } from "../context/VisionBoardContext";
 import { useShopCartActions } from "@shopify/shop-minis-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { buildCartTipsClient } from "../fal-usage/fal";
 import { tipsCache } from "../../cache/tipsCache";           // shared cache filled by Warmup
 import { inferCategory } from "../utils/tipsPrefetch";     // same rules as warmup

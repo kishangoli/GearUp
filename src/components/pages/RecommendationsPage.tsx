@@ -3,7 +3,7 @@ import { useProductSearch, ProductCard } from "@shopify/shop-minis-react";
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { useUserAnswers } from "../context/UserAnswersContext";
 import { generatePromptBlurbsClient } from "../fal-usage/fal";
 import { useVisionBoard } from "../context/VisionBoardContext";
@@ -448,7 +448,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         }
         
         /* Optimize motion elements for better performance */
-        [data-framer-motion] {
+        [data-motion] {
           transform-style: preserve-3d;
           backface-visibility: hidden;
           perspective: 1000px;
@@ -487,7 +487,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         }
         
         /* Prevent layout shifts during animations */
-        .embla__slide [data-framer-motion] {
+        .embla__slide [data-motion] {
           width: 100%;
           display: block;
         }

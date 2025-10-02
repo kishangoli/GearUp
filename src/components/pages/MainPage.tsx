@@ -4,7 +4,7 @@ import { FITNESS_GOALS } from '../label-data/fitnessGoals';
 import { FitnessGoal, ExperienceLevel } from '../types/fitness';
 import { useUserAnswers } from '../context/UserAnswersContext';
 import { Button } from "../ui/moving-border";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 
 interface MainPageProps {
   onBack: () => void;

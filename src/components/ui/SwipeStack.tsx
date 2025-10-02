@@ -5,7 +5,7 @@ import {
   useAnimationControls,
   useMotionValue,
   useTransform,
-} from "framer-motion";
+} from "motion/react";
 import { ProductCard } from "@shopify/shop-minis-react";
 
 type KeyFn = (item: any, index: number) => string;

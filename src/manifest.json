@@ -6,7 +6,8 @@
   "terms_url": "https://example.com/terms",
   "trusted_domains": [
     "queue.fal.run",
-    "fal.run"
+    "fal.run",
+    "backend-448821269912.us-central1.run.app"
   ],
   "handle": "gearup-lsyy"
 }
