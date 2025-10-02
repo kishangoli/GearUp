@@ -1,7 +1,5 @@
 import React from "react";
 import { useProductSearch, ProductCard } from "@shopify/shop-minis-react";
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
 
 import { motion, AnimatePresence } from "motion/react";
 import { useUserAnswers } from "../context/UserAnswersContext";
@@ -210,6 +208,16 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         [data-testid*="product"] *,
         [class*="product-card"] *,
         [class*="ProductCard"] * {
+          color: white !important;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .shopify-product-card *,
+        .shopify-product-card [class*="product-title"],
+        .shopify-product-card [class*="product-vendor"],
+        .shopify-product-card [class*="product-price"],
+        .shopify-product-card [data-component*="ProductTitle"],
+        .shopify-product-card [data-component*="ProductPrice"] {
           color: white !important;
           text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
         }
@@ -455,41 +463,12 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
         }
 
         /* Enhanced Embla Carousel Spacing - Edge to Edge */
-        .embla {
-          overflow: hidden;
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
-        
-        .embla__container {
-          display: flex;
-          margin-left: 0; /* Start from edge */
-        }
-        
-        .embla__slide {
-          flex: 0 0 auto;
-          padding-left: 16px; /* 16px spacing between slides (equivalent to px-4) */
-          min-width: 160px; /* Minimum width to prevent squishing */
-          max-width: calc(50% - 8px); /* Maximum 50% width minus half the gap */
-        }
-        
-        .embla__slide:first-child {
-          padding-left: 16px; /* First slide starts with padding from edge */
-        }
-        
-        .embla__slide:last-child {
-          padding-right: 16px; /* Last slide ends with padding to edge */
-        }
-        
-        /* Ensure product cards don't overflow their containers */
-        .embla__slide > * {
-          width: 100%;
-          height: 100%;
-          box-sizing: border-box;
-        }
-        
-        /* Prevent layout shifts during animations */
-        .embla__slide [data-motion] {
-          width: 100%;
-          display: block;
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
           
       `}</style>
@@ -946,6 +925,100 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
 
 /* ----------------------------- Prompt Row ----------------------------- */
 
+const MotionCarousel: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const trackRef = React.useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const cardWidth = React.useRef(0);
+  const scrollInterval = React.useRef<number | null>(null);
+
+  // Function to scroll one card width
+  const scrollOneCard = React.useCallback(() => {
+    const track = trackRef.current;
+    if (!track || isDragging) return;
+
+    // If we've reached the end, reset to beginning
+    if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 10) {
+      track.scrollLeft = 0;
+      return;
+    }
+    
+    // Get exact width of a card (first child element) if not already set
+    if (cardWidth.current === 0 && track.firstElementChild?.firstElementChild) {
+      const firstCard = track.firstElementChild.children[0] as HTMLElement;
+      if (firstCard) {
+        // Width of card + gap (margin-right)
+        cardWidth.current = firstCard.offsetWidth + 16; // 16px is gap-4
+      }
+    }
+    
+    // Scroll by exactly one card width
+    if (cardWidth.current > 0) {
+      track.scrollLeft += cardWidth.current;
+    } else {
+      // Fallback if we can't determine card width
+      track.scrollLeft += 160 + 16; // Default card width + gap
+    }
+  }, [isDragging]);
+
+  // Set up and clean up interval for scrolling
+  React.useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    
+    // Only start scrolling if there's enough content to scroll
+    const hasOverflow = track.scrollWidth > track.clientWidth;
+    if (!hasOverflow) return;
+    
+    // Start scrolling every 3 seconds
+    if (!isDragging && scrollInterval.current === null) {
+      scrollInterval.current = window.setInterval(scrollOneCard, 3000);
+    }
+
+    return () => {
+      if (scrollInterval.current !== null) {
+        window.clearInterval(scrollInterval.current);
+        scrollInterval.current = null;
+      }
+    };
+  }, [isDragging, scrollOneCard, children]);
+
+  // Pause scrolling while dragging
+  React.useEffect(() => {
+    if (isDragging && scrollInterval.current !== null) {
+      window.clearInterval(scrollInterval.current);
+      scrollInterval.current = null;
+    } else if (!isDragging && scrollInterval.current === null) {
+      scrollInterval.current = window.setInterval(scrollOneCard, 3000);
+    }
+  }, [isDragging, scrollOneCard]);
+
+  return (
+    <div
+      className="overflow-hidden cursor-grab active:cursor-grabbing"
+      onMouseDown={() => setIsDragging(true)}
+      onMouseUp={() => setIsDragging(false)}
+      onMouseLeave={() => setIsDragging(false)}
+      onTouchStart={() => setIsDragging(true)}
+      onTouchEnd={() => setIsDragging(false)}
+      style={{ userSelect: "none" }}
+    >
+      <div
+        ref={trackRef}
+        className="flex gap-4 px-4 scrollbar-hide"
+        style={{ 
+          scrollBehavior: 'smooth',
+          WebkitOverflowScrolling: 'touch',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+
 const PromptRow: React.FC<{
   prompt: Prompt;
   blurb?: string;
@@ -956,16 +1029,6 @@ const PromptRow: React.FC<{
   const { add } = useVisionBoard();
   const [fetchCount, setFetchCount] = React.useState(20);
   const raw: any = useProductSearch({ query: prompt.query, first: fetchCount });
-
-  const [emblaRef] = useEmblaCarousel(
-    { 
-      loop: true,
-      align: 'start',
-      containScroll: 'trimSnaps',
-      dragFree: true
-    },
-    [Autoplay({ delay: 3000, stopOnInteraction: false })]
-  );
 
   const isLoading =
     typeof raw?.isLoading === "boolean" ? raw.isLoading :
@@ -1111,55 +1174,41 @@ const PromptRow: React.FC<{
       )}
 
       {!isLoading && !error && (
-        <div className="embla overflow-hidden" ref={emblaRef}>
-          <div className="embla__container flex">
-            <AnimatePresence>
-              {filteredProducts.map((prod, i) => {
-                const key = idOf(prod, i);
-                return (
-                  <motion.div
-                    key={key}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -16, scale: 0.98 }}
-                    transition={{ type: "spring", stiffness: 520, damping: 36, mass: 0.8 }}
-                    className="embla__slide"
-                  >
-                    <div className="relative w-full h-full">
-                      <ProductCard product={prod} />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          add(prod);
-                          removeById(key);
-                          onAnyItemAdded(prod, e.currentTarget);
-                        }}
-                        className="absolute bottom-15 right-3 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold hover:bg-black/70 active:scale-90 transition-all duration-200"
-                        aria-label="Quick add"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-
-            {filteredProducts.length === 0 && filterMessage && (
-              <div className="w-full px-4">
-                <div className="text-sm text-blue-300 border border-blue-400/30 bg-blue-500/10 rounded-xl p-4 flex items-center gap-3">
-                  <span className="text-lg">💰</span>
-                  <div>
-                    <p className="font-medium">{filterMessage}</p>
-                    <p className="text-xs text-blue-300/70 mt-1">
-                      Available range: ${Math.floor(productPriceRange.min)} - ${Math.ceil(productPriceRange.max)}
-                    </p>
+        <MotionCarousel>
+          <AnimatePresence>
+            {filteredProducts.map((prod, i) => {
+              const key = idOf(prod, i);
+              return (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16, scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 520, damping: 36, mass: 0.8 }}
+                  className="flex-shrink-0 w-[160px] max-w-[50%]"
+                >
+                  <div className="relative w-full h-full">
+                    <ProductCard product={prod} />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        add(prod);
+                        removeById(key);
+                        onAnyItemAdded(prod, e.currentTarget);
+                      }}
+                      className="absolute bottom-15 right-3 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold hover:bg-black/70 active:scale-90 transition-all duration-200"
+                      aria-label="Quick add"
+                    >
+                      +
+                    </button>
                   </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+          
+          {/* Filter message if needed */}
+        </MotionCarousel>
       )}
     </section>
   );
@@ -1177,13 +1226,12 @@ const SkeletonSection = () => (
   );
   
 const SkeletonCarousel = () => (
-  <div className="embla overflow-hidden">
-    <div className="embla__container flex">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="embla__slide">
-          <div className="h-44 rounded-xl bg-slate-700/60 border border-slate-600 animate-pulse" />
-        </div>
-      ))}
-    </div>
-  </div>
+  <MotionCarousel>
+    {Array.from({ length: 4 }).map((_, i) => (
+      <div
+        key={i}
+        className="w-[160px] h-44 rounded-xl bg-slate-700/60 border border-slate-600 animate-pulse"
+      />
+    ))}
+  </MotionCarousel>
 );
