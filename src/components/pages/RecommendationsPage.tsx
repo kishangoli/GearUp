@@ -969,9 +969,9 @@ const MotionCarousel: React.FC<{ children: React.ReactNode }> = ({ children }) =
     const hasOverflow = track.scrollWidth > track.clientWidth;
     if (!hasOverflow) return;
     
-    // Start scrolling every 3 seconds
+    // Start scrolling every 8 seconds (much slower)
     if (!isDragging && scrollInterval.current === null) {
-      scrollInterval.current = window.setInterval(scrollOneCard, 3000);
+      scrollInterval.current = window.setInterval(scrollOneCard, 8000);
     }
 
     return () => {
@@ -988,7 +988,7 @@ const MotionCarousel: React.FC<{ children: React.ReactNode }> = ({ children }) =
       window.clearInterval(scrollInterval.current);
       scrollInterval.current = null;
     } else if (!isDragging && scrollInterval.current === null) {
-      scrollInterval.current = window.setInterval(scrollOneCard, 3000);
+      scrollInterval.current = window.setInterval(scrollOneCard, 8000);
     }
   }, [isDragging, scrollOneCard]);
 
