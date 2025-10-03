@@ -930,6 +930,7 @@ const MotionCarousel: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const [isDragging, setIsDragging] = React.useState(false);
   const cardWidth = React.useRef(0);
   const scrollInterval = React.useRef<number | null>(null);
+  const hasScrolledInitially = React.useRef(false);
 
   // Function to scroll one card width
   const scrollOneCard = React.useCallback(() => {
@@ -969,8 +970,27 @@ const MotionCarousel: React.FC<{ children: React.ReactNode }> = ({ children }) =
     const hasOverflow = track.scrollWidth > track.clientWidth;
     if (!hasOverflow) return;
     
-    // Start scrolling every 8 seconds (much slower)
-    if (!isDragging && scrollInterval.current === null) {
+    // Initial tutorial scroll after 2 seconds when page loads
+    if (!hasScrolledInitially.current && !isDragging) {
+      const initialTimeout = setTimeout(() => {
+        scrollOneCard();
+        hasScrolledInitially.current = true;
+        
+        // Then start the regular interval after the initial scroll
+        scrollInterval.current = window.setInterval(scrollOneCard, 8000);
+      }, 2000);
+      
+      return () => {
+        clearTimeout(initialTimeout);
+        if (scrollInterval.current !== null) {
+          window.clearInterval(scrollInterval.current);
+          scrollInterval.current = null;
+        }
+      };
+    }
+    
+    // Start scrolling every 8 seconds (for subsequent loads or when not dragging)
+    if (!isDragging && scrollInterval.current === null && hasScrolledInitially.current) {
       scrollInterval.current = window.setInterval(scrollOneCard, 8000);
     }
 

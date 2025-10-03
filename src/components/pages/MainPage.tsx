@@ -3,7 +3,6 @@ import { useFitnessSelections } from '../hooks/useFitnessSelections';
 import { FITNESS_GOALS } from '../label-data/fitnessGoals';
 import { FitnessGoal, ExperienceLevel } from '../types/fitness';
 import { useUserAnswers } from '../context/UserAnswersContext';
-import { Button } from "../ui/moving-border";
 import { motion, AnimatePresence } from "motion/react";
 
 interface MainPageProps {
@@ -175,6 +174,24 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         @keyframes glow {
           0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
           50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.25); }
+        }
+        
+        .glass-morphism-selected {
+          background: rgba(59, 130, 246, 0.15);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(59, 130, 246, 0.3);
+          box-shadow: 
+            0 8px 32px rgba(59, 130, 246, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-morphism-selected::before {
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.15),
+            transparent
+          );
         }
         
         @keyframes slideInUp {
@@ -474,26 +491,18 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         <div className="px-4 mt-0 mb-8 h-16 w-full"> {/* Raised button and set fixed height */}
           <AnimatePresence mode="wait">
             {selections.goals.length > 0 ? (
-              // ACTIVE STATE: Animated Button
-              <motion.div
+              // ACTIVE STATE: Glowing Button (matching FollowUpQuestionsPage)
+              <motion.button
                 key="active-button"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="h-full w-full"
+                onClick={handleGetRecommendations}
+                className="w-full py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 touch-feedback glass-morphism-selected text-white glow-effect hover:brightness-110"
               >
-                <Button
-                  onClick={handleGetRecommendations}
-                  borderRadius="1rem"
-                  duration={4000}
-                  containerClassName="h-full w-full"
-                  borderClassName="opacity-70 bg-gradient-to-r from-blue-400 to-purple-500"
-                  className={`h-full w-full rounded-2xl font-semibold transition-colors duration-300 bg-slate-800 text-white touch-feedback ${isCompactView ? 'text-base' : 'text-xl'}`}
-                >
-                  Continue
-                </Button>
-              </motion.div>
+                Continue
+              </motion.button>
             ) : (
               // INACTIVE STATE: Simple, non-animated div
               <motion.div
