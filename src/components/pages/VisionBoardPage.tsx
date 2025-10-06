@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { buildCartTipsClient } from "../fal-usage/fal";
 import { tipsCache } from "../../cache/tipsCache";           // shared cache filled by Warmup
 import { inferCategory } from "../utils/tipsPrefetch";     // same rules as warmup
-import { ToastProvider, SuccessToast } from '../ui/Toast';
+
 
 /* ───────────────────────────── Helpers ───────────────────────────── */
 
@@ -46,14 +46,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
   const { addToCart } = useShopCartActions();
   const { navigateToCart } = useShopNavigation(); // New hook for cart navigation
   const [hasAddedToCart, setHasAddedToCart] = React.useState(false);
-  const [toastOpen, setToastOpen] = React.useState(false);
-  const [toastConfig, setToastConfig] = React.useState<{
-    title: string;
-    variant: 'success' | 'info' | 'error';
-  }>({
-    title: "Added to cart!",
-    variant: 'success'
-  });
+  const [cartItemCount, setCartItemCount] = React.useState(0);
 
   // lock page scroll while here
   React.useEffect(() => {
@@ -111,13 +104,6 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
     remove(key); // remove immediately so empty-state updates
     if (idx === -1) return;
     
-    // Show success toast immediately
-    setToastConfig({
-      title: "Added to cart!",
-      variant: 'success'
-    });
-    setToastOpen(true);
-    
     const product = items[idx];
     const { productId, productVariantId } = pickIds(product);
     if (!productId || !productVariantId) return;
@@ -126,16 +112,10 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
       // Add to cart in the background
       await addToCart({ productId, productVariantId, quantity: 1 });
       setHasAddedToCart(true); // 👈 Track that we've added something to cart
+      setCartItemCount(prev => prev + 1); // 👈 Increment cart counter
     } catch (error) {
-      // If cart addition fails, show error toast
-      setToastOpen(false); // Close success toast
-      setTimeout(() => {
-        setToastConfig({
-          title: "Couldn't add to cart",
-          variant: 'error'
-        });
-        setToastOpen(true);
-      }, 300); // Small delay to ensure previous toast is gone
+      // Silently handle cart addition failure
+      console.warn('Failed to add item to cart:', error);
     }
   };
 
@@ -434,15 +414,24 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
         .cart-button:active {
           transform: scale(0.98);
         }
+
+        /* FAB Cart Button Styles */
+        .fab-cart {
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          box-shadow: 
+            0 10px 25px rgba(59, 130, 246, 0.4),
+            0 4px 12px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .fab-cart:hover {
+          box-shadow: 
+            0 15px 35px rgba(59, 130, 246, 0.5),
+            0 6px 16px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
       `}</style>
       <div className="relative min-h-screen animated-bg">
-        <ToastProvider>
-          <SuccessToast 
-            open={toastOpen}
-            setOpen={setToastOpen}
-            title={toastConfig.title}
-            variant={toastConfig.variant}
-          />
         
           {/* Sticky Back Button */}
           <div className="fixed top-4 left-4 z-50">
@@ -638,25 +627,78 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
           </AnimatePresence>
           {/* ▲▲▲ Always-visible TIPS section ▲▲▲ */}
 
-          {/* Go to Cart Button - appears when at least one item has been added to cart */}
+          {/* Floating Action Button (FAB) - Cart */}
           <AnimatePresence>
             {hasAddedToCart && (
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="fixed bottom-6 left-0 right-0 px-4 z-50"
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 400, 
+                  damping: 25,
+                  opacity: { duration: 0.2 }
+                }}
+                className="fixed bottom-8 right-6 z-[1000]"
               >
                 <button
                   onClick={() => navigateToCart()}
-                  className="w-full py-4 px-6 rounded-xl font-semibold text-xl text-white cart-button glow-effect hover:brightness-110"
+                  className="
+                    relative group
+                    w-16 h-16 rounded-full
+                    bg-gradient-to-br from-blue-500 to-blue-600
+                    hover:from-blue-400 hover:to-blue-500
+                    shadow-lg hover:shadow-xl
+                    border-2 border-white/20
+                    backdrop-blur-sm
+                    flex items-center justify-center
+                    transform hover:scale-110 active:scale-95
+                    transition-all duration-200 ease-out
+                    glow-effect
+                  "
                 >
-                  Go to Cart
+                  {/* Cart Icon */}
+                  <CartIcon className="w-7 h-7 text-white" />
+                  
+                  {/* Cart Counter Badge */}
+                  {cartItemCount > 0 && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="
+                        absolute -top-1 -right-1
+                        w-6 h-6 rounded-full
+                        bg-red-500 border-2 border-white
+                        flex items-center justify-center
+                        text-xs font-bold text-white
+                        shadow-md
+                      "
+                    >
+                      {cartItemCount > 9 ? '9+' : cartItemCount}
+                    </motion.div>
+                  )}
+                  
+                  {/* Hover tooltip */}
+                  <div className="
+                    absolute bottom-full right-0 mb-2
+                    px-3 py-1 rounded-lg
+                    bg-gray-900/90 backdrop-blur-sm
+                    text-white text-sm font-medium
+                    border border-white/20
+                    opacity-0 group-hover:opacity-100
+                    transform translate-y-1 group-hover:translate-y-0
+                    transition-all duration-200
+                    pointer-events-none
+                    whitespace-nowrap
+                  ">
+                    Go to Cart
+                    <div className="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900/90"></div>
+                  </div>
                 </button>
               </motion.div>
             )}
           </AnimatePresence>
-        </ToastProvider>
       </div>
     </>
   );
