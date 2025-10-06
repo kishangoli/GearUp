@@ -1,7 +1,7 @@
 import React from "react";
 import SwipeStack from "../ui/SwipeStack";
 import { useVisionBoard } from "../context/VisionBoardContext";
-import { useShopCartActions } from "@shopify/shop-minis-react";
+import { useShopCartActions, useShopNavigation } from "@shopify/shop-minis-react";
 import { motion, AnimatePresence } from "motion/react";
 import { buildCartTipsClient } from "../fal-usage/fal";
 import { tipsCache } from "../../cache/tipsCache";           // shared cache filled by Warmup
@@ -44,6 +44,8 @@ type VisionBoardPageProps = { onBack: () => void };
 export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
   const { items, remove, clear } = useVisionBoard();
   const { addToCart } = useShopCartActions();
+  const { navigateToCart } = useShopNavigation(); // New hook for cart navigation
+  const [hasAddedToCart, setHasAddedToCart] = React.useState(false);
   const [toastOpen, setToastOpen] = React.useState(false);
   const [toastConfig, setToastConfig] = React.useState<{
     title: string;
@@ -123,6 +125,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
     try {
       // Add to cart in the background
       await addToCart({ productId, productVariantId, quantity: 1 });
+      setHasAddedToCart(true); // 👈 Track that we've added something to cart
     } catch (error) {
       // If cart addition fails, show error toast
       setToastOpen(false); // Close success toast
@@ -415,6 +418,22 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
         .animate-toast-swipe-out {
           animation: toast-swipe-out 200ms ease-out forwards;
         }
+
+        /* Add this style for the cart button */
+        .cart-button {
+          background: rgba(59, 130, 246, 0.15);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(59, 130, 246, 0.3);
+          box-shadow: 
+            0 8px 32px rgba(59, 130, 246, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          animation: glow 4s ease-in-out infinite;
+          transition: all 0.3s ease;
+        }
+        
+        .cart-button:active {
+          transform: scale(0.98);
+        }
       `}</style>
       <div className="relative min-h-screen animated-bg">
         <ToastProvider>
@@ -618,6 +637,25 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
             )}
           </AnimatePresence>
           {/* ▲▲▲ Always-visible TIPS section ▲▲▲ */}
+
+          {/* Go to Cart Button - appears when at least one item has been added to cart */}
+          <AnimatePresence>
+            {hasAddedToCart && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed bottom-6 left-0 right-0 px-4 z-50"
+              >
+                <button
+                  onClick={() => navigateToCart()}
+                  className="w-full py-4 px-6 rounded-xl font-semibold text-xl text-white cart-button glow-effect hover:brightness-110"
+                >
+                  Go to Cart
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </ToastProvider>
       </div>
     </>
