@@ -630,8 +630,8 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                 exit={{ opacity: 0, y: -10, scale: 0.99 }}
                 transition={{ duration: 0.22 }}
                 className="
-                  fixed bottom-0 left-0 right-0 z-[900]
-                  w-screen px-6 py-8
+                  fixed bottom-8 left-0 right-0 z-[900]
+                  w-screen px-6 py-6
                 "
               >
                 <div className="max-w-sm mx-auto space-y-4">
@@ -683,8 +683,8 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                 exit={{ opacity: 0, y: -10, scale: 0.99 }}
                 transition={{ duration: 0.22 }}
                 className="
-                  fixed bottom-0 left-0 right-0 z-[900]
-                  w-screen px-6 py-8
+                  fixed bottom-16 left-0 right-0 z-[900]
+                  w-screen px-6 py-6
                 "
               >
                 <div className="max-w-xs mx-auto text-center">
