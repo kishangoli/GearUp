@@ -47,6 +47,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
   const { navigateToCart } = useShopNavigation(); // New hook for cart navigation
   const [hasAddedToCart, setHasAddedToCart] = React.useState(false);
   const [cartItemCount, setCartItemCount] = React.useState(0);
+  const [allItemsProcessed, setAllItemsProcessed] = React.useState(false);
 
   // lock page scroll while here
   React.useEffect(() => {
@@ -82,6 +83,10 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
   /* ── Swipes ── */
   const handleSwipeLeft = async (key: string) => {
     remove(key);
+    // Check if all items have been processed
+    if (items.length === 1) { // This will be the last item after removal
+      setAllItemsProcessed(true);
+    }
   };
 
   const pickIds = (p: any) => {
@@ -116,6 +121,11 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
     } catch (error) {
       // Silently handle cart addition failure
       console.warn('Failed to add item to cart:', error);
+    }
+
+    // Check if all items have been processed
+    if (items.length === 1) { // This will be the last item after removal
+      setAllItemsProcessed(true);
     }
   };
 
@@ -430,6 +440,51 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
             0 6px 16px rgba(0, 0, 0, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.25);
         }
+
+        /* Ultra-aggressive Shopify FAB hiding - targets all possible selectors */
+        html [data-shop-mini-cart-fab],
+        html .shop-mini-cart-fab,
+        html .shopify-cart-fab,
+        html .cart-fab,
+        html .mini-cart-fab,
+        html button[aria-label*="cart" i][style*="fixed"],
+        html button[class*="cart"][style*="fixed"],
+        html div[class*="cart-fab"],
+        html div[data-testid*="cart"],
+        html .floating-cart-button,
+        html .cart-floating-button,
+        html shop-mini-cart-fab,
+        html .shop-mini-cart-wrapper [role="button"],
+        html .shop-mini-floating-cart,
+        html [class*="ShopMini"][class*="Cart"],
+        html [class*="FloatingCart"],
+        html [data-shop-mini="true"] button[style*="position: fixed"],
+        html button[style*="background-color: rgb(98, 77, 227)"],
+        html button[style*="background: rgb(98, 77, 227)"],
+        html div[style*="background-color: rgb(98, 77, 227)"],
+        html div[style*="background: rgb(98, 77, 227)"],
+        html button[style*="position: fixed"][style*="bottom"][style*="right"]:not([class*="custom-fab"]),
+        html div[style*="position: fixed"][style*="bottom"][style*="right"][role="button"],
+        /* Target by common Shopify Mini patterns */
+        html [id*="shop-mini"],
+        html [class*="shop-mini"],
+        html [data-shopify*="cart"],
+        html button[style*="z-index"][style*="fixed"]:not([class*="custom-fab"]),
+        /* Catch-all for bottom-right fixed buttons that aren't ours */
+        html body > * button[style*="position: fixed"][style*="bottom"]:not([class*="custom-fab"]),
+        html body > div > * button[style*="position: fixed"][style*="bottom"]:not([class*="custom-fab"]) {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+          z-index: -9999 !important;
+          position: absolute !important;
+          left: -9999px !important;
+          top: -9999px !important;
+          width: 0 !important;
+          height: 0 !important;
+          overflow: hidden !important;
+        }
       `}</style>
       <div className="relative min-h-screen animated-bg">
         
@@ -541,9 +596,9 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
             </div>
           )}
 
-          {/* ▼▼▼ Always-visible TIPS section (positioned absolutely) ▼▼▼ */}
+          {/* ▼▼▼ Always-visible TIPS section or completion actions ▼▼▼ */}
           <AnimatePresence mode="popLayout">
-            {items.length === 0 ? (
+            {items.length === 0 && !allItemsProcessed ? (
               <motion.section
                 initial={{ opacity: 0, y: 20, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -566,6 +621,91 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                       Go back to add more gear!
                     </button>
                   </div>
+                </div>
+              </motion.section>
+            ) : allItemsProcessed && hasAddedToCart ? (
+              <motion.section
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.99 }}
+                transition={{ duration: 0.22 }}
+                className="
+                  fixed bottom-0 left-0 right-0 z-[900]
+                  w-screen px-6 py-8
+                "
+              >
+                <div className="max-w-sm mx-auto space-y-4">
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-white mb-2">
+                      🎉 Selection Complete!
+                    </div>
+                    <div className="text-sm text-gray-300">
+                      You've added {cartItemCount} item{cartItemCount !== 1 ? 's' : ''} to your cart
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={onBack}
+                      className="
+                        flex-1 py-3 px-4 rounded-xl
+                        bg-gray-600/30 hover:bg-gray-600/50
+                        text-white font-medium
+                        border border-gray-500/30
+                        transition-all duration-200
+                      "
+                    >
+                      Add More Gear
+                    </button>
+                    
+                    <button
+                      onClick={() => navigateToCart()}
+                      className="
+                        flex-1 py-3 px-4 rounded-xl
+                        bg-gradient-to-r from-blue-500 to-blue-600
+                        hover:from-blue-400 hover:to-blue-500
+                        text-white font-semibold
+                        shadow-lg hover:shadow-xl
+                        transform hover:scale-[1.02] active:scale-[0.98]
+                        transition-all duration-200
+                        glow-effect
+                      "
+                    >
+                      Go to Cart ({cartItemCount})
+                    </button>
+                  </div>
+                </div>
+              </motion.section>
+            ) : allItemsProcessed && !hasAddedToCart ? (
+              <motion.section
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.99 }}
+                transition={{ duration: 0.22 }}
+                className="
+                  fixed bottom-0 left-0 right-0 z-[900]
+                  w-screen px-6 py-8
+                "
+              >
+                <div className="max-w-xs mx-auto text-center">
+                  <div className="text-lg font-medium text-white mb-3">
+                    No items added to cart
+                  </div>
+                  <button
+                    onClick={onBack}
+                    className="
+                      w-full py-3 px-4 rounded-xl
+                      bg-gradient-to-r from-blue-500 to-blue-600
+                      hover:from-blue-400 hover:to-blue-500
+                      text-white font-semibold
+                      shadow-lg hover:shadow-xl
+                      transform hover:scale-[1.02] active:scale-[0.98]
+                      transition-all duration-200
+                      glow-effect
+                    "
+                  >
+                    Browse More Gear
+                  </button>
                 </div>
               </motion.section>
             ) : top && (
@@ -627,78 +767,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
           </AnimatePresence>
           {/* ▲▲▲ Always-visible TIPS section ▲▲▲ */}
 
-          {/* Floating Action Button (FAB) - Cart */}
-          <AnimatePresence>
-            {hasAddedToCart && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 400, 
-                  damping: 25,
-                  opacity: { duration: 0.2 }
-                }}
-                className="fixed bottom-8 right-6 z-[1000]"
-              >
-                <button
-                  onClick={() => navigateToCart()}
-                  className="
-                    relative group
-                    w-16 h-16 rounded-full
-                    bg-gradient-to-br from-blue-500 to-blue-600
-                    hover:from-blue-400 hover:to-blue-500
-                    shadow-lg hover:shadow-xl
-                    border-2 border-white/20
-                    backdrop-blur-sm
-                    flex items-center justify-center
-                    transform hover:scale-110 active:scale-95
-                    transition-all duration-200 ease-out
-                    glow-effect
-                  "
-                >
-                  {/* Cart Icon */}
-                  <CartIcon className="w-7 h-7 text-white" />
-                  
-                  {/* Cart Counter Badge */}
-                  {cartItemCount > 0 && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="
-                        absolute -top-1 -right-1
-                        w-6 h-6 rounded-full
-                        bg-red-500 border-2 border-white
-                        flex items-center justify-center
-                        text-xs font-bold text-white
-                        shadow-md
-                      "
-                    >
-                      {cartItemCount > 9 ? '9+' : cartItemCount}
-                    </motion.div>
-                  )}
-                  
-                  {/* Hover tooltip */}
-                  <div className="
-                    absolute bottom-full right-0 mb-2
-                    px-3 py-1 rounded-lg
-                    bg-gray-900/90 backdrop-blur-sm
-                    text-white text-sm font-medium
-                    border border-white/20
-                    opacity-0 group-hover:opacity-100
-                    transform translate-y-1 group-hover:translate-y-0
-                    transition-all duration-200
-                    pointer-events-none
-                    whitespace-nowrap
-                  ">
-                    Go to Cart
-                    <div className="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900/90"></div>
-                  </div>
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          
       </div>
     </>
   );
