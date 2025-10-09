@@ -1,12 +1,12 @@
 import React from "react";
 import SwipeStack from "../ui/SwipeStack";
 import { useVisionBoard } from "../context/VisionBoardContext";
-import { useShopCartActions } from "@shopify/shop-minis-react";
+import { useShopCartActions, useShopNavigation } from "@shopify/shop-minis-react";
 import { motion, AnimatePresence } from "motion/react";
 import { buildCartTipsClient } from "../fal-usage/fal";
 import { tipsCache } from "../../cache/tipsCache";           // shared cache filled by Warmup
 import { inferCategory } from "../utils/tipsPrefetch";     // same rules as warmup
-import { ToastProvider, SuccessToast } from '../ui/Toast';
+
 
 /* ───────────────────────────── Helpers ───────────────────────────── */
 
@@ -44,14 +44,10 @@ type VisionBoardPageProps = { onBack: () => void };
 export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
   const { items, remove, clear } = useVisionBoard();
   const { addToCart } = useShopCartActions();
-  const [toastOpen, setToastOpen] = React.useState(false);
-  const [toastConfig, setToastConfig] = React.useState<{
-    title: string;
-    variant: 'success' | 'info' | 'error';
-  }>({
-    title: "Added to cart!",
-    variant: 'success'
-  });
+  const { navigateToCart } = useShopNavigation(); // New hook for cart navigation
+  const [hasAddedToCart, setHasAddedToCart] = React.useState(false);
+  const [cartItemCount, setCartItemCount] = React.useState(0);
+  const [allItemsProcessed, setAllItemsProcessed] = React.useState(false);
 
   // lock page scroll while here
   React.useEffect(() => {
@@ -87,6 +83,10 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
   /* ── Swipes ── */
   const handleSwipeLeft = async (key: string) => {
     remove(key);
+    // Check if all items have been processed
+    if (items.length === 1) { // This will be the last item after removal
+      setAllItemsProcessed(true);
+    }
   };
 
   const pickIds = (p: any) => {
@@ -109,13 +109,6 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
     remove(key); // remove immediately so empty-state updates
     if (idx === -1) return;
     
-    // Show success toast immediately
-    setToastConfig({
-      title: "Added to cart!",
-      variant: 'success'
-    });
-    setToastOpen(true);
-    
     const product = items[idx];
     const { productId, productVariantId } = pickIds(product);
     if (!productId || !productVariantId) return;
@@ -123,16 +116,16 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
     try {
       // Add to cart in the background
       await addToCart({ productId, productVariantId, quantity: 1 });
+      setHasAddedToCart(true); // 👈 Track that we've added something to cart
+      setCartItemCount(prev => prev + 1); // 👈 Increment cart counter
     } catch (error) {
-      // If cart addition fails, show error toast
-      setToastOpen(false); // Close success toast
-      setTimeout(() => {
-        setToastConfig({
-          title: "Couldn't add to cart",
-          variant: 'error'
-        });
-        setToastOpen(true);
-      }, 300); // Small delay to ensure previous toast is gone
+      // Silently handle cart addition failure
+      console.warn('Failed to add item to cart:', error);
+    }
+
+    // Check if all items have been processed
+    if (items.length === 1) { // This will be the last item after removal
+      setAllItemsProcessed(true);
     }
   };
 
@@ -415,15 +408,85 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
         .animate-toast-swipe-out {
           animation: toast-swipe-out 200ms ease-out forwards;
         }
+
+        /* Add this style for the cart button */
+        .cart-button {
+          background: rgba(59, 130, 246, 0.15);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(59, 130, 246, 0.3);
+          box-shadow: 
+            0 8px 32px rgba(59, 130, 246, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          animation: glow 4s ease-in-out infinite;
+          transition: all 0.3s ease;
+        }
+        
+        .cart-button:active {
+          transform: scale(0.98);
+        }
+
+        /* FAB Cart Button Styles */
+        .fab-cart {
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          box-shadow: 
+            0 10px 25px rgba(59, 130, 246, 0.4),
+            0 4px 12px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .fab-cart:hover {
+          box-shadow: 
+            0 15px 35px rgba(59, 130, 246, 0.5),
+            0 6px 16px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+
+        /* Ultra-aggressive Shopify FAB hiding - targets all possible selectors */
+        html [data-shop-mini-cart-fab],
+        html .shop-mini-cart-fab,
+        html .shopify-cart-fab,
+        html .cart-fab,
+        html .mini-cart-fab,
+        html button[aria-label*="cart" i][style*="fixed"],
+        html button[class*="cart"][style*="fixed"],
+        html div[class*="cart-fab"],
+        html div[data-testid*="cart"],
+        html .floating-cart-button,
+        html .cart-floating-button,
+        html shop-mini-cart-fab,
+        html .shop-mini-cart-wrapper [role="button"],
+        html .shop-mini-floating-cart,
+        html [class*="ShopMini"][class*="Cart"],
+        html [class*="FloatingCart"],
+        html [data-shop-mini="true"] button[style*="position: fixed"],
+        html button[style*="background-color: rgb(98, 77, 227)"],
+        html button[style*="background: rgb(98, 77, 227)"],
+        html div[style*="background-color: rgb(98, 77, 227)"],
+        html div[style*="background: rgb(98, 77, 227)"],
+        html button[style*="position: fixed"][style*="bottom"][style*="right"]:not([class*="custom-fab"]),
+        html div[style*="position: fixed"][style*="bottom"][style*="right"][role="button"],
+        /* Target by common Shopify Mini patterns */
+        html [id*="shop-mini"],
+        html [class*="shop-mini"],
+        html [data-shopify*="cart"],
+        html button[style*="z-index"][style*="fixed"]:not([class*="custom-fab"]),
+        /* Catch-all for bottom-right fixed buttons that aren't ours */
+        html body > * button[style*="position: fixed"][style*="bottom"]:not([class*="custom-fab"]),
+        html body > div > * button[style*="position: fixed"][style*="bottom"]:not([class*="custom-fab"]) {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+          z-index: -9999 !important;
+          position: absolute !important;
+          left: -9999px !important;
+          top: -9999px !important;
+          width: 0 !important;
+          height: 0 !important;
+          overflow: hidden !important;
+        }
       `}</style>
       <div className="relative min-h-screen animated-bg">
-        <ToastProvider>
-          <SuccessToast 
-            open={toastOpen}
-            setOpen={setToastOpen}
-            title={toastConfig.title}
-            variant={toastConfig.variant}
-          />
         
           {/* Sticky Back Button */}
           <div className="fixed top-4 left-4 z-50">
@@ -533,9 +596,9 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
             </div>
           )}
 
-          {/* ▼▼▼ Always-visible TIPS section (positioned absolutely) ▼▼▼ */}
+          {/* ▼▼▼ Always-visible TIPS section or completion actions ▼▼▼ */}
           <AnimatePresence mode="popLayout">
-            {items.length === 0 ? (
+            {items.length === 0 && !allItemsProcessed ? (
               <motion.section
                 initial={{ opacity: 0, y: 20, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -558,6 +621,91 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                       Go back to add more gear!
                     </button>
                   </div>
+                </div>
+              </motion.section>
+            ) : allItemsProcessed && hasAddedToCart ? (
+              <motion.section
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.99 }}
+                transition={{ duration: 0.22 }}
+                className="
+                  fixed bottom-8 left-0 right-0 z-[900]
+                  w-screen px-6 py-6
+                "
+              >
+                <div className="max-w-sm mx-auto space-y-4">
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-white mb-2">
+                      🎉 Selection Complete!
+                    </div>
+                    <div className="text-sm text-gray-300">
+                      You've added {cartItemCount} item{cartItemCount !== 1 ? 's' : ''} to your cart
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={onBack}
+                      className="
+                        flex-1 py-3 px-4 rounded-xl
+                        bg-gray-600/30 hover:bg-gray-600/50
+                        text-white font-medium
+                        border border-gray-500/30
+                        transition-all duration-200
+                      "
+                    >
+                      Add More Gear
+                    </button>
+                    
+                    <button
+                      onClick={() => navigateToCart()}
+                      className="
+                        flex-1 py-3 px-4 rounded-xl
+                        bg-gradient-to-r from-blue-500 to-blue-600
+                        hover:from-blue-400 hover:to-blue-500
+                        text-white font-semibold
+                        shadow-lg hover:shadow-xl
+                        transform hover:scale-[1.02] active:scale-[0.98]
+                        transition-all duration-200
+                        glow-effect
+                      "
+                    >
+                      Go to Cart ({cartItemCount})
+                    </button>
+                  </div>
+                </div>
+              </motion.section>
+            ) : allItemsProcessed && !hasAddedToCart ? (
+              <motion.section
+                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.99 }}
+                transition={{ duration: 0.22 }}
+                className="
+                  fixed bottom-16 left-0 right-0 z-[900]
+                  w-screen px-6 py-6
+                "
+              >
+                <div className="max-w-xs mx-auto text-center">
+                  <div className="text-lg font-medium text-white mb-3">
+                    No items added to cart
+                  </div>
+                  <button
+                    onClick={onBack}
+                    className="
+                      w-full py-3 px-4 rounded-xl
+                      bg-gradient-to-r from-blue-500 to-blue-600
+                      hover:from-blue-400 hover:to-blue-500
+                      text-white font-semibold
+                      shadow-lg hover:shadow-xl
+                      transform hover:scale-[1.02] active:scale-[0.98]
+                      transition-all duration-200
+                      glow-effect
+                    "
+                  >
+                    Browse More Gear
+                  </button>
                 </div>
               </motion.section>
             ) : top && (
@@ -618,7 +766,8 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
             )}
           </AnimatePresence>
           {/* ▲▲▲ Always-visible TIPS section ▲▲▲ */}
-        </ToastProvider>
+
+          
       </div>
     </>
   );
