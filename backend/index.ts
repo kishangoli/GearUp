@@ -1,3 +1,4 @@
+import express from "express";
 import dotenv from "dotenv";
 import { fal } from "@fal-ai/client";
 import cors from "cors"; // Import cors
