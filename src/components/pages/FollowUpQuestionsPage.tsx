@@ -1,3 +1,4 @@
+import {Label, Button} from '@shopify/shop-minis-react'
 import React from 'react';
 import { useFollowUpQuestions } from '../hooks/useFollowUpQuestions';
 import { FOLLOW_UP_QUESTIONS, DIETARY_ALLERGIES_QUESTION } from '../label-data/followUpQuestions';
@@ -247,7 +248,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
               const optionIcon = typeof option === 'string' ? question.icon : option.icon;
               
               return (
-                <label
+                <Label
                   key={optionText}
                   className={`flex items-center p-4 rounded-xl cursor-pointer touch-feedback transition-all duration-300 ${
                     currentValue === optionText
@@ -267,7 +268,7 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
                     <span className="text-lg mr-3">{optionIcon}</span>
                     <span className="font-medium text-white">{optionText}</span>
                   </div>
-                </label>
+                </Label>
               );
             })}
           </div>
@@ -584,23 +585,23 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
           
           {/* Sticky Back Button */}
           <div className="fixed top-4 left-4 z-50">
-            <button
+            <Button
               onClick={handleBack}
               className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
             >
               <span className="text-xl">←</span>
-            </button>
+            </Button>
           </div>
 
           {/* Randomize Button */}
           <div className="fixed top-4 right-4 z-50">
-            <button
+            <Button
               onClick={handleRandomize}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600/80 backdrop-blur-sm rounded-xl text-white text-sm font-medium hover:bg-purple-700/80 transition-all duration-200 shadow-lg"
             >
               <span className="text-lg">🎲</span>
               <span>Auto</span>
-            </button>
+            </Button>
           </div>
 
           {/* Goal Header */}
@@ -657,12 +658,12 @@ export const FollowUpQuestionsPage: React.FC<FollowUpQuestionsPageProps> = ({
         {/* Navigation */}
         <div className="px-4 pb-8" data-navigation>
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={handleNext}
               className="w-full py-4 px-6 rounded-xl font-semibold transition-all duration-300 touch-feedback glass-morphism-selected text-white glow-effect hover:brightness-110"
             >
               {totalGoals === 1 || canFinish() ? 'Get Recommendations' : 'Next'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

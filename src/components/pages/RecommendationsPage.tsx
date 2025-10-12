@@ -1,5 +1,5 @@
 import React from "react";
-import { useProductSearch, ProductCard } from "@shopify/shop-minis-react";
+import { useProductSearch, ProductCard, Image, Button } from "@shopify/shop-minis-react";
 
 import { motion, AnimatePresence } from "motion/react";
 import { useUserAnswers } from "../context/UserAnswersContext";
@@ -508,7 +508,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
           >
             {/* Mini product image */}
             {item.product?.images?.[0]?.url || item.product?.featuredImage?.url ? (
-              <img
+              <Image
                 src={item.product.images?.[0]?.url || item.product.featuredImage?.url}
                 alt=""
                 className="w-full h-full object-cover"
@@ -543,17 +543,17 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
 
       {/* Sticky Back Button */}
       <div className="fixed top-4 left-4 z-50">
-        <button
+        <Button
           onClick={onBack}
           className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
         >
           <span className="text-xl">←</span>
-        </button>
+        </Button>
       </div>
 
       {/* Auto-Select Button */}
       <div className="fixed top-4 right-4 z-50">
-        <button
+        <Button
           onClick={handleAutoSelect}
           disabled={isAutoSelecting || hasAutoSelected || !plan?.prompts?.length}
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-xl shadow-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -569,7 +569,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
               <span>Auto Gear-Up</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
 
       <div className="pt-20 px-4 pb-6 flex items-center justify-center">
@@ -674,7 +674,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
                           ${priceRange.min.toLocaleString()} - ${priceRange.max.toLocaleString()}
                         </span>
                       </motion.div>
-                      <button
+                      <Button
                         onClick={() => setIsPriceFilterExpanded(false)}
                         className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
                       >
@@ -685,7 +685,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
                         >
                           ▼
                         </motion.span>
-                      </button>
+                      </Button>
                     </div>
                   </div>
                   
@@ -794,7 +794,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
                   
                   {/* Professional Preset Buttons */}
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={() => {
                         // If already selected, deselect to "Any Budget"
                         if (priceRange.min === 0 && priceRange.max === 100) {
@@ -810,8 +810,8 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
                       }`}
                     >
                       $0 - $100
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => {
                         // If already selected, deselect to "Any Budget"
                         if (priceRange.min === 100 && priceRange.max === 300) {
@@ -827,8 +827,8 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
                       }`}
                     >
                       $100 - $300
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => {
                         // If already selected, deselect to "Any Budget"
                         if (priceRange.min === 300 && priceRange.max === 1000) {
@@ -844,7 +844,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
                       }`}
                     >
                       $300+
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </motion.div>
@@ -903,7 +903,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
       <div className="fixed left-0 right-0 bottom-0 px-4 pb-6 pt-2 bg-gradient-to-t from-slate-900/90 via-slate-800/50 to-transparent backdrop-blur">
         <div className="flex gap-2">
           {onViewVisionBoard && (
-            <button
+            <Button
               onClick={items.length > 0 ? onViewVisionBoard : undefined}
               data-review-gear-button
               className={`flex-1 h-12 rounded-xl font-medium shadow transition-colors ${
@@ -914,7 +914,7 @@ export const RecommendationsPage: React.FC<RecommendationsPageProps> = ({
               disabled={items.length === 0}
             >
               {items.length > 0 ? 'Review Your Gear' : 'Add gear to begin'}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -1209,7 +1209,7 @@ const PromptRow: React.FC<{
                 >
                   <div className="relative w-full h-full">
                     <ProductCard product={prod} />
-                    <button
+                    <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         add(prod);
@@ -1220,7 +1220,7 @@ const PromptRow: React.FC<{
                       aria-label="Quick add"
                     >
                       +
-                    </button>
+                    </Button>
                   </div>
                 </motion.div>
               );

@@ -9,5 +9,8 @@
     "fal.run",
     "backend-448821269912.us-central1.run.app"
   ],
-  "handle": "gearup-lsyy"
+  "handle": "gearup-lsyy",
+  "scopes": [
+    "product_list:read"
+  ]
 }

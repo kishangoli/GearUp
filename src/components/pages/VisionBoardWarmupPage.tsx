@@ -1,3 +1,4 @@
+import {Button} from '@shopify/shop-minis-react'
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useVisionBoard } from "../context/VisionBoardContext";
@@ -127,12 +128,12 @@ export default function VisionBoardWarmupPage({ onDone, onBack, title = "Getting
         {/* Sticky Back Button */}
         {onBack && (
           <div className="fixed top-4 left-4 z-50">
-            <button
+            <Button
               onClick={onBack}
               className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
             >
               <span className="text-xl">←</span>
-            </button>
+            </Button>
           </div>
         )}
 
@@ -165,12 +166,12 @@ export default function VisionBoardWarmupPage({ onDone, onBack, title = "Getting
               transition={{ duration: 0.2 }}
               className="mt-4"
             >
-              <button
+              <Button
                 onClick={onDone}
                 className="w-full h-10 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium shadow-lg hover:from-blue-700 hover:to-purple-700 active:from-blue-800 active:to-purple-800 transition-all duration-200 glow-effect"
               >
                 Open my board
-              </button>
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>

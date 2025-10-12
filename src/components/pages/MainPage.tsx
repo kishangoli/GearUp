@@ -1,3 +1,4 @@
+import {Button, Image} from '@shopify/shop-minis-react'
 import React, { useState, useEffect, useRef } from 'react';
 import { useFitnessSelections } from '../hooks/useFitnessSelections';
 import { FITNESS_GOALS } from '../label-data/fitnessGoals';
@@ -430,19 +431,19 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
 
         {/* Sticky Back Button */}
         <div className="fixed top-4 left-4 z-50">
-          <button
+          <Button
             onClick={onBack}
             className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
           >
             <span className="text-xl">←</span>
-          </button>
+          </Button>
         </div>
 
         {/* Header Section */}
         <div className="px-4 pt-18 pb-1">          
           <div className="text-center">
             <div className="floating-element">
-              <img 
+              <Image 
                 //src="https://archive.org/download/gearupshortfinal/gearupshortfinal.png" 
                 src="/gearupshortfinal.png"
                 alt="Gear Up Logo" 
@@ -460,7 +461,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
           
           <div className="goal-grid grid grid-cols-2 gap-4 mb-4">
             {FITNESS_GOALS.map((goal, index) => (
-              <button
+              <Button
                 key={goal.id}
                 ref={(el) => observeElement(el, `goal-${goal.id}`)}
                 onClick={() => handleGoalToggle(goal.id)}
@@ -482,7 +483,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
                 <div className={`text-sm opacity-80 leading-tight ${isCompactView ? 'text-xs' : ''}`}>
                   {goal.description}
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         </div>

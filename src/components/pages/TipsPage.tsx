@@ -1,7 +1,7 @@
 // src/pages/TipsPage.tsx
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useSavedProducts } from "@shopify/shop-minis-react";
+import { useSavedProducts, Button } from "@shopify/shop-minis-react";
 import { buildCartTipsClient, type CartItemInput, type CartTips } from "../fal-usage/fal";
 
 type TipsPageProps = {
@@ -83,12 +83,12 @@ export const TipsPage: React.FC<TipsPageProps> = ({ onBack, context, onBrowseMor
       
       {/* Sticky Back Button */}
       <div className="fixed top-4 left-4 z-50">
-        <button
+        <Button
           onClick={onBack}
           className="flex items-center justify-center w-12 h-12 text-gray-800 hover:text-gray-600 transition-all duration-200"
         >
           <span className="text-xl">←</span>
-        </button>
+        </Button>
       </div>
 
       <div className="pt-12 px-4 pb-6 flex items-center justify-center">
@@ -114,12 +114,12 @@ export const TipsPage: React.FC<TipsPageProps> = ({ onBack, context, onBrowseMor
               Tap the save icon on a few products you like, then come back for personalized tips.
             </p>
             {onBrowseMore && (
-              <button
+              <Button
                 onClick={onBrowseMore}
                 className="mt-4 h-11 w-full rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 active:bg-indigo-800 transition-colors"
               >
                 Browse products
-              </button>
+              </Button>
             )}
           </div>
         </div>

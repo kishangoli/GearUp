@@ -1,7 +1,7 @@
 import React from "react";
 import SwipeStack from "../ui/SwipeStack";
 import { useVisionBoard } from "../context/VisionBoardContext";
-import { useShopCartActions, useShopNavigation } from "@shopify/shop-minis-react";
+import { useShopCartActions, useShopNavigation, Button } from "@shopify/shop-minis-react";
 import { motion, AnimatePresence } from "motion/react";
 import { buildCartTipsClient } from "../fal-usage/fal";
 import { tipsCache } from "../../cache/tipsCache";           // shared cache filled by Warmup
@@ -490,24 +490,24 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
         
           {/* Sticky Back Button */}
           <div className="fixed top-4 left-4 z-50">
-            <button 
+            <Button 
               onClick={onBack} 
               className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
             >
               <span className="text-xl">←</span>
-            </button>
+            </Button>
           </div>
 
           {/* Header */}
           <div className="pt-12 px-4 pb-6 flex items-center justify-between">
             <div className="w-10" /> {/* Spacer for centering */}
             <h1 className="text-2xl font-bold text-white flex items-center">Gear Up & Go</h1>
-            <button
+            <Button
               onClick={clear}
               className="text-sm text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
             >
               Clear
-            </button>
+            </Button>
           </div>
 
           {/* Always-visible dock icons */}
@@ -614,12 +614,12 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                   <div className="text-sm text-gray-300 leading-relaxed">
                     Your gear collection is empty.
                     <br />
-                    <button 
+                    <Button 
                       onClick={onBack}
                       className="text-white font-medium hover:text-blue-300 transition-colors duration-200 cursor-pointer underline"
                     >
                       Go back to add more gear!
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </motion.section>
@@ -645,7 +645,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                   </div>
                   
                   <div className="flex gap-3">
-                    <button
+                    <Button
                       onClick={onBack}
                       className="
                         flex-1 py-3 px-4 rounded-xl
@@ -656,9 +656,9 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                       "
                     >
                       Add More Gear
-                    </button>
+                    </Button>
                     
-                    <button
+                    <Button
                       onClick={() => navigateToCart()}
                       className="
                         flex-1 py-3 px-4 rounded-xl
@@ -672,7 +672,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                       "
                     >
                       Go to Cart ({cartItemCount})
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </motion.section>
@@ -691,7 +691,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                   <div className="text-lg font-medium text-white mb-3">
                     No items added to cart
                   </div>
-                  <button
+                  <Button
                     onClick={onBack}
                     className="
                       w-full py-3 px-4 rounded-xl
@@ -705,7 +705,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                     "
                   >
                     Browse More Gear
-                  </button>
+                  </Button>
                 </div>
               </motion.section>
             ) : top && (

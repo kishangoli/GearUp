@@ -1,3 +1,4 @@
+import {Image, Button} from '@shopify/shop-minis-react'
 import React, { useState } from 'react';
 
 interface OpenerPageProps {
@@ -35,7 +36,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
 
       <div className="min-h-screen relative overflow-hidden flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40]">
       
-      <img
+      <Image
         src="/output.gif"
         alt="Running background"
         className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
@@ -44,7 +45,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       <div className="absolute inset-0 bg-black/50 z-10"></div>
       
       <div className="flex-1 flex items-center justify-center -mt-40 relative z-30">
-        <img 
+        <Image 
           src="/gearupfinal.gif"
           alt="Gear Up Logo" 
           className="h-90 w-auto" 
@@ -56,7 +57,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
         Tell us your goals. We'll curate personalized gear, nutrition, and recovery picks.
       </p>
       <div className="relative">
-        <button
+        <Button
           onClick={onGetStarted}
           className="w-full h-16 rounded-full bg-transparent text-white font-semibold text-xl
                     border border-white relative overflow-hidden
@@ -74,7 +75,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
             }}
           ></div>
           <span className="relative z-10">Get Started</span>
-        </button>
+        </Button>
       </div>
     </div>
   </div>
