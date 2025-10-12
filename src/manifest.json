@@ -1,9 +1,9 @@
 {
   "name": "GearUp",
-  "description": "Embark on your health or fitness journey.",
+  "description": "Your personal fitness concierge, curating the right gear, nutrition, and recovery picks to power your goals.",
   "permissions": [],
-  "privacy_policy_url": "https://example.com/privacy",
-  "terms_url": "https://example.com/terms",
+  "privacy_policy_url": "https://tarry-purple-564.notion.site/Privacy-Policy-28a169809972801cafccd4660f2c4cf1?source=copy_link",
+  "terms_url": "https://tarry-purple-564.notion.site/Terms-Conditions-28a1698099728025a356d55f2e105661?source=copy_link",
   "trusted_domains": [
     "queue.fal.run",
     "fal.run",
