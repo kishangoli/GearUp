@@ -1,12 +1,12 @@
 import {Image, Button} from '@shopify/shop-minis-react'
-import React, { useState } from 'react';
+import React from 'react';
 
 interface OpenerPageProps {
   onGetStarted: () => void;
 }
 
 export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
-  const [videoReady, setVideoReady] = useState(false);
+  // removed unused state
 
   return (
     <>

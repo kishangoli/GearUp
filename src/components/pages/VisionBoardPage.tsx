@@ -502,12 +502,12 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
           <div className="pt-12 px-4 pb-6 flex items-center justify-between">
             <div className="w-10" /> {/* Spacer for centering */}
             <h1 className="text-2xl font-bold text-white flex items-center">Gear Up & Go</h1>
-            <Button
+            <button
               onClick={clear}
               className="text-sm text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
             >
               Clear
-            </Button>
+            </button>
           </div>
 
           {/* Always-visible dock icons */}

@@ -1209,25 +1209,23 @@ const PromptRow: React.FC<{
                 >
                   <div className="relative w-full h-full">
                     <ProductCard product={prod} />
-                    <Button
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         add(prod);
                         removeById(key);
                         onAnyItemAdded(prod, e.currentTarget);
                       }}
-                      className="absolute bottom-15 right-3 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold hover:bg-black/70 active:scale-90 transition-all duration-200"
+                      className="absolute bottom-15 right-3 z-10 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white text-lg font-bold hover:bg-black/70 active:scale-90 transition-all duration-200 shadow-lg"
                       aria-label="Quick add"
                     >
                       +
-                    </Button>
+                    </button>
                   </div>
                 </motion.div>
               );
             })}
           </AnimatePresence>
-          
-          {/* Filter message if needed */}
         </MotionCarousel>
       )}
     </section>

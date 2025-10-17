@@ -1,4 +1,4 @@
-import {Button, Image} from '@shopify/shop-minis-react'
+import { Button, Image } from '@shopify/shop-minis-react';
 import React, { useState, useEffect, useRef } from 'react';
 import { useFitnessSelections } from '../hooks/useFitnessSelections';
 import { FITNESS_GOALS } from '../label-data/fitnessGoals';
@@ -14,53 +14,12 @@ interface MainPageProps {
 export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
-  const [isCompactView, setIsCompactView] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const { selections, toggleGoal, isGoalSelected } = useFitnessSelections();
   const { updateGoals, updateExperience } = useUserAnswers();
 
-  // Define handleViewportChange at the top level
-  const handleViewportChange = () => {
-    const vh = window.visualViewport?.height || window.innerHeight;
-    const vw = window.visualViewport?.width || window.innerWidth;
-
-    const aspectRatio = vh / vw;
-    const isCompact = vh < 700 || aspectRatio < 1.5;
-
-    setIsCompactView(isCompact);
-  };
-
-  // Prevent unnecessary scrolling
-  const preventUnnecessaryScroll = () => {
-    const container = document.querySelector('.main-container') as HTMLElement;
-    if (container) {
-      if (selections.goals.length === 0) {
-        container.style.overflow = 'hidden';
-        return;
-      }
-
-      const contentHeight = container.scrollHeight;
-      const viewportHeight = window.innerHeight;
-
-      if (contentHeight <= viewportHeight) {
-        container.style.overflow = 'hidden';
-      } else {
-        container.style.overflowY = 'auto';
-        container.style.overflowX = 'hidden';
-      }
-    }
-  };
-
-  // Page load animation and intersection observer setup
   useEffect(() => {
     setIsLoaded(true);
-
-    document.documentElement.style.backgroundColor = '#284B63';
-    document.body.style.backgroundColor = '#284B63';
-
-    handleViewportChange();
-    window.addEventListener('resize', handleViewportChange);
-    window.addEventListener('orientationchange', handleViewportChange);
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -77,25 +36,19 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
     );
 
     return () => {
-      window.removeEventListener('resize', handleViewportChange);
-      window.removeEventListener('orientationchange', handleViewportChange);
       if (observerRef.current) {
         observerRef.current.disconnect();
       }
     };
   }, []);
 
-  // Sync selections → global store whenever user changes them
   useEffect(() => {
     updateGoals(selections.goals as FitnessGoal[]);
     Object.entries(selections.experienceLevels).forEach(([goal, level]) => {
       updateExperience(goal as FitnessGoal, level as ExperienceLevel);
     });
+  }, [selections.goals, selections.experienceLevels, updateGoals, updateExperience]);
 
-    setTimeout(preventUnnecessaryScroll, 100);
-  }, [selections.goals, selections.experienceLevels]);
-
-  // Observe elements when they mount
   const observeElement = (element: HTMLElement | null, id: string) => {
     if (element && observerRef.current) {
       element.setAttribute('data-animate-id', id);
@@ -111,12 +64,9 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
     onProceed(selections);
   };
 
-  // Updated CheckmarkIcon component
   const CheckmarkIcon = ({ isSelected }: { isSelected: boolean }) => (
     <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
-      isSelected 
-        ? 'bg-green-500 animate-bounce' 
-        : 'border-2 border-white/20'
+      isSelected ? 'bg-green-500' : 'border-2 border-white/20'
     }`}>
       {isSelected && (
         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,118 +79,59 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
   return (
     <>
       <style>{`
-        html {
+        html, body {
           background-color: #242331 !important;
-          min-height: 100%;
-          overscroll-behavior: none;
-        }
-        
-        body {
-          overflow-x: hidden;
-          max-width: 100vw;
-          background-color: #242331 !important;
-          min-height: 100vh;
           margin: 0;
           padding: 0;
-          overscroll-behavior: none;
-          position: fixed;
-          width: 100%;
+          overflow-x: hidden;
         }
         
         #root {
           background-color: #242331;
-          height: 100vh;
-          overflow-y: auto;
-          overflow-x: hidden;
-          overscroll-behavior: none;
+          min-height: 100vh;
         }
-        
-        /* Ensure consistent background throughout */
-        * {
-          box-sizing: border-box;
-        }
-        
-        /* Enhanced Glassmorphism Animations */
+
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        
+
         @keyframes glow {
           0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
           50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.25); }
         }
-        
-        .glass-morphism-selected {
-          background: rgba(59, 130, 246, 0.15);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(59, 130, 246, 0.3);
-          box-shadow: 
-            0 8px 32px rgba(59, 130, 246, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-        
-        .glass-morphism-selected::before {
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.15),
-            transparent
-          );
-        }
-        
+
         @keyframes slideInUp {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+
+        @keyframes shimmerSweep {
+          0% { left: -100%; }
+          100% { left: 100%; }
         }
-        
+
         .animated-bg {
           background: linear-gradient(-45deg, #242331, #1d4865ff, #242331, #1c4661ff);
           background-size: 400% 400%;
           animation: gradientShift 15s ease infinite;
         }
-        
-        .floating-element {
-          animation: float 6s ease-in-out infinite;
-        }
-        
+
         .glow-effect {
           animation: glow 4s ease-in-out infinite;
         }
-        
+
         .glass-morphism {
           background: rgba(255, 255, 255, 0.08);
           backdrop-filter: blur(16px);
           border: 1px solid rgba(255, 255, 255, 0.15);
-          box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
           position: relative;
           overflow: hidden;
           transition: all 0.3s ease;
-          transform: scale(1.0);
-          margin: 4px;
         }
-        
+
         .glass-morphism::before {
           content: '';
           position: absolute;
@@ -248,277 +139,133 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
           left: -100%;
           width: 100%;
           height: 100%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.1),
-            transparent
-          );
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
           transition: left 0.8s ease;
         }
-        
-        .glass-morphism.animate-shimmer::before {
-          left: 100%;
-        }
-        
-        .glass-morphism:active {
-          transform: scale(0.98);
-        }
-        
+
         .glass-morphism-selected {
           background: rgba(59, 130, 246, 0.15);
           backdrop-filter: blur(20px);
           border: 1px solid rgba(59, 130, 246, 0.3);
-          box-shadow: 
-            0 8px 32px rgba(59, 130, 246, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
-          transform: scale(1.05);
-          margin: 4px;
-          z-index: 10;
+          box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
-        
+
         .glass-morphism-selected::before {
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.15),
-            transparent
-          );
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
         }
-        
+
         .slide-in-up {
           animation: slideInUp 0.6s ease-out forwards;
         }
-        
-        // .fade-in-stagger {
-        //   opacity: 0;
-        //   animation: fadeInUp 0.8s ease-out forwards;
-        // }
-        
-        // .stagger-animation {
-        //   opacity: 0;
-        //   animation: fadeInUp 0.8s ease-out forwards;
-        // }
-        
-        .stagger-1 { animation-delay: 0.1s; }
-        .stagger-2 { animation-delay: 0.2s; }
-        .stagger-3 { animation-delay: 0.3s; }
-        .stagger-4 { animation-delay: 0.4s; }
-        
-        /* Mobile-optimized scroll animations */
+
         .scroll-reveal {
           opacity: 0;
           transition: all 0.8s ease-out;
         }
-        
+
         .scroll-reveal.visible {
           opacity: 1;
         }
-        
-        .shimmer-on-scroll {
-          transition: all 0.3s ease;
-        }
-        
+
         .shimmer-on-scroll.visible::before {
           animation: shimmerSweep 1.5s ease-out;
         }
-        
-        @keyframes shimmerSweep {
-          0% { left: -100%; }
-          100% { left: 100%; }
-        }
-        
-        /* Enhanced mobile touch feedback */
+
         .touch-feedback:active {
           transform: scale(0.95);
-          filter: brightness(1.1);
-        }
-        
-        /* Scroll-based glow effect */
-        .scroll-glow.visible {
-          box-shadow: 
-            0 0 20px rgba(59, 130, 246, 0.2),
-            0 8px 32px rgba(59, 130, 246, 0.1);
-        }
-        
-        /* Responsive viewport adaptations */
-        .compact-layout {
-          --header-padding: 0.75rem;
-          --section-margin: 1.5rem;
-          --button-padding: 1rem;
-          --text-size: 0.9rem;
-          --icon-size: 2.5rem;
-        }
-        
-        .normal-layout {
-          --header-padding: 1rem;
-          --section-margin: 2rem;
-          --button-padding: 1.25rem;
-          --text-size: 1rem;
-          --icon-size: 3rem;
-        }
-        
-        /* Dynamic spacing classes */
-        .responsive-padding {
-          padding-top: var(--header-padding);
-          padding-bottom: var(--header-padding);
-        }
-        
-        .responsive-margin {
-          margin-bottom: var(--section-margin);
-        }
-        
-        .responsive-button-padding {
-          padding: var(--button-padding);
-        }
-        
-        .responsive-text {
-          font-size: var(--text-size);
-        }
-        
-        .responsive-icon {
-          font-size: var(--icon-size);
-        }
-        
-        /* iPhone-specific optimizations */
-        @media screen and (max-height: 900px) {
-          .goal-grid {
-            gap: 0.5rem;
-          }
-          
-          .experience-section {
-            margin-bottom: 1rem;
-          }
-          
-          .header-logo {
-            height: 3.5rem;
-            margin-bottom: 0.25rem;
-          }
-        }
-        
-        @media screen and (min-height: 900px) {
-          .goal-grid {
-            gap: 0.75rem;
-          }
-          
-          .experience-section {
-            margin-bottom: 2rem;
-          }
-          
-          .header-logo {
-            height: 4.5rem;
-            margin-bottom: 0.5rem;
-          }
         }
       `}</style>
-      <div className={`main-container h-screen overflow-y-auto overflow-x-hidden max-w-full animated-bg relative flex flex-col ${isCompactView ? 'compact-layout' : 'normal-layout'}`} style={{ overscrollBehavior: 'none' }}>
-        {/* Enhanced Progress Bar at Top */}
+
+      <div className="main-container min-h-screen animated-bg flex flex-col">
+        {/* Progress Bar */}
         <div className="fixed top-0 left-0 right-0 z-50">
-          <div className="h-2 bg-gray-800/80 backdrop-blur-sm">
+          <div className="h-2 bg-gray-800/80">
             <div 
-              className="h-full bg-gradient-to-r from-blue-400 via-blue-500 to-purple-500 shadow-lg shadow-blue-500/30 transition-all duration-500 ease-out glow-effect"
-              style={{ 
-                width: `${selections.goals.length > 0 ? 
-                  (selections.goals.filter(g => selections.experienceLevels[g]).length / selections.goals.length) * 100 : 0
-                }%` 
-              }}
+              className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-500"
+              style={{ width: `${selections.goals.length > 0 ? (selections.goals.filter(g => selections.experienceLevels[g]).length / selections.goals.length) * 100 : 0}%` }}
             />
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-h-0">
-
-        {/* Sticky Back Button */}
+        {/* Back Button */}
         <div className="fixed top-4 left-4 z-50">
-          <Button
-            onClick={onBack}
-            className="flex items-center justify-center w-12 h-12 text-white hover:text-gray-300 transition-all duration-200"
-          >
+          <Button onClick={onBack} className="flex items-center justify-center w-12 h-12 text-white">
             <span className="text-xl">←</span>
           </Button>
         </div>
 
-        {/* Header Section */}
-        <div className="px-4 pt-18 pb-1">          
+        {/* Header */}
+        <div className="px-4 pt-20 pb-6">
           <div className="text-center">
-            <div className="floating-element">
-              <Image 
-                //src="https://archive.org/download/gearupshortfinal/gearupshortfinal.png" 
-                src="/gearupshortfinal.png"
-                alt="Gear Up Logo" 
-                className={`header-logo w-auto mx-auto mb-1 ${isLoaded ? 'slide-in-up' : ''}`}
-              />
-            </div>
-            <p className={`responsive-text text-gray-200 mb-1 max-w-md mx-auto ${isLoaded ? 'slide-in-up' : ''}`} style={{ animationDelay: '0.2s' }}>
+            <Image 
+              src="/gearupshortfinal.png"
+              alt="Gear Up Logo" 
+              className={`h-16 w-auto mx-auto mb-2 ${isLoaded ? 'slide-in-up' : ''}`}
+            />
+            <p className={`text-base text-gray-200 max-w-md mx-auto ${isLoaded ? 'slide-in-up' : ''}`}>
               Your personal fitness journey begins here.
             </p>
           </div>
         </div>
 
-        {/* Goals Selection Section */}
-        <div className="px-4 mb-4 mt-2 flex-1">
-          
-          <div className="goal-grid grid grid-cols-2 gap-4 mb-4">
-            {FITNESS_GOALS.map((goal, index) => (
-              <Button
-                key={goal.id}
-                ref={(el) => observeElement(el, `goal-${goal.id}`)}
-                onClick={() => handleGoalToggle(goal.id)}
-                className={`p-4 rounded-2xl transition-all duration-300 transform touch-feedback relative scroll-reveal shimmer-on-scroll ${
-                  visibleElements.has(`goal-${goal.id}`) ? 'visible' : ''
-                } ${
-                  isGoalSelected(goal.id)
-                    ? 'glass-morphism-selected text-white scroll-glow'
-                    : 'glass-morphism text-gray-200'
-                } ${isLoaded ? 'fade-in-stagger' : ''} stagger-${index + 1}`}
-              >
-                <div className="absolute top-3 right-3">
-                  <CheckmarkIcon isSelected={isGoalSelected(goal.id)} />
+        {/* Goals Grid - Reduced gap and taller cards */}
+        <div className="flex-1 px-4 pb-24">
+          <div className="grid grid-cols-2 gap-3">
+            {FITNESS_GOALS.map((goal) => {
+              const id = `goal-${goal.id}`;
+              const selected = isGoalSelected(goal.id);
+              return (
+                <div
+                  key={goal.id}
+                  ref={(el) => observeElement(el, id)}
+                  className={`scroll-reveal shimmer-on-scroll ${visibleElements.has(id) ? 'visible' : ''}`}
+                  style={{ aspectRatio: '0.95' }}
+                >
+                  <Button
+                    onClick={() => handleGoalToggle(goal.id)}
+                    className={`w-full h-full rounded-2xl transition-all duration-300 touch-feedback relative
+                      flex flex-col items-center justify-center p-6
+                      ${selected ? 'glass-morphism-selected text-white ring-2 ring-blue-400' : 'glass-morphism text-gray-200'}`}
+                  >
+                    <div className="absolute top-3 right-3">
+                      <CheckmarkIcon isSelected={selected} />
+                    </div>
+                    <div className="text-5xl mb-3">{goal.icon}</div>
+                    <div className="text-lg font-semibold mb-2">{goal.label}</div>
+                    <div className="text-s opacity-80 text-center leading-tight px-1">{goal.description}</div>
+                  </Button>
                 </div>
-                <div className={`text-4xl mb-3 ${isCompactView ? 'text-3xl mb-2' : ''}`}>{goal.icon}</div>
-                <div className={`text-base font-semibold mb-2 ${isCompactView ? 'text-sm mb-1' : ''}`}>
-                  {goal.label}
-                </div>
-                <div className={`text-sm opacity-80 leading-tight ${isCompactView ? 'text-xs' : ''}`}>
-                  {goal.description}
-                </div>
-              </Button>
-            ))}
+              );
+            })}
           </div>
         </div>
-        
-        {/* Fixed Action Button at Bottom */}
-        <div className="px-4 mt-0 mb-8 h-16 w-full"> {/* Raised button and set fixed height */}
+
+        {/* Bottom Button */}
+        <div className="fixed bottom-0 left-0 right-0 px-4 pb-8 bg-gradient-to-t from-[#242331] via-[#242331] to-transparent pt-4">
           <AnimatePresence mode="wait">
             {selections.goals.length > 0 ? (
-              // ACTIVE STATE: Glowing Button (matching FollowUpQuestionsPage)
               <motion.button
-                key="active-button"
+                key="active"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
                 onClick={handleGetRecommendations}
-                className="w-full py-4 px-6 rounded-xl font-semibold text-xl transition-all duration-300 touch-feedback glass-morphism-selected text-white glow-effect hover:brightness-110"
+                className="w-full py-4 rounded-xl font-semibold text-xl glass-morphism-selected text-white glow-effect"
               >
                 Continue
               </motion.button>
             ) : (
-              // INACTIVE STATE: Simple, non-animated div
               <motion.div
-                key="inactive-button"
+                key="inactive"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className={`h-full w-full rounded-2xl font-semibold flex items-center justify-center bg-gray-800/50 text-gray-400 cursor-not-allowed ${isCompactView ? 'text-base' : 'text-lg'}`}
+                className="w-full py-4 rounded-xl font-semibold text-lg text-center bg-gray-800/50 text-gray-400"
               >
                 Pick your goal(s) to continue
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
         </div>
       </div>
     </>
