@@ -443,8 +443,11 @@ ${JSON.stringify(context ?? {}, null, 2)}
       });
     }
 
-    return { tips: fallbackTips };
+    return { tips: fallbackTips };  // ← This return was already there
   }
+  
+  // Add this final return to satisfy TypeScript
+  return { tips: [] };
 }
 
 /* -------------------------------------------------------------------------- */
