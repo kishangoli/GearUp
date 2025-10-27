@@ -113,15 +113,15 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
     const { productId, productVariantId } = pickIds(product);
     if (!productId || !productVariantId) return;
     
-    try {
-      // Add to cart in the background
-      await addToCart({ productId, productVariantId, quantity: 1 });
-      setHasAddedToCart(true); // 👈 Track that we've added something to cart
-      setCartItemCount(prev => prev + 1); // 👈 Increment cart counter
-    } catch (error) {
-      // Silently handle cart addition failure
-      console.warn('Failed to add item to cart:', error);
-    }
+    // Fire-and-forget: don't await, add to cart in background
+    addToCart({ productId, productVariantId, quantity: 1 })
+      .then(() => {
+        setHasAddedToCart(true);
+        setCartItemCount(prev => prev + 1);
+      })
+      .catch((error) => {
+        console.warn('Failed to add item to cart:', error);
+      });
 
     // Check if all items have been processed
     if (items.length === 1) { // This will be the last item after removal
