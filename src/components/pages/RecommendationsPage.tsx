@@ -1101,46 +1101,6 @@ const PromptRow: React.FC<{
     });
   }, [products, priceFilter]);
 
-  // Calculate price range of available products for helpful messaging
-  const productPriceRange = React.useMemo(() => {
-    if (products.length === 0) return { min: 0, max: 0 };
-    
-    const prices = products.map(product => {
-      const priceStr = product.price?.amount || 
-                      product.priceRange?.minVariantPrice?.amount || 
-                      product.variants?.edges?.[0]?.node?.price?.amount ||
-                      product.variants?.[0]?.price?.amount ||
-                      (typeof product.price === 'string' ? product.price : '0');
-      
-      const price = parseFloat(priceStr.toString().replace(/[^0-9.]/g, ''));
-      return isNaN(price) ? null : price;
-    }).filter((p): p is number => p !== null);
-
-    if (prices.length === 0) return { min: 0, max: 0 };
-
-    return {
-      min: Math.min(...prices),
-      max: Math.max(...prices),
-    };
-  }, [products]);
-
-  // Determine what message to show when no products are visible
-  const getFilterMessage = () => {
-    if (products.length === 0) return null; // Don't show anything if no products at all
-    if (filteredProducts.length > 0) return null; // Don't show message if products are visible
-    
-    // Products exist but are filtered out by price
-    if (priceFilter.max < productPriceRange.min) {
-      return `Try a higher budget (items start around $${Math.floor(productPriceRange.min)})`;
-    } else if (priceFilter.min > productPriceRange.max) {
-      return `Try a lower budget (items max around $${Math.ceil(productPriceRange.max)})`;
-    } else {
-      return "No items in this price range";
-    }
-  };
-
-  const filterMessage = getFilterMessage();
-
   // Auto-fetch more products if filtered list is too small
   React.useEffect(() => {
     // Super aggressive fetching: keep fetching until we have at least 10 visible products

@@ -126,7 +126,7 @@ export async function prefetchTipsForItems(items: any[], opts: PrefetchOpts = {}
   await Promise.allSettled(pool);
 
   // helper: detect settled by attaching catch/then (fire-and-forget)
-  function isSettled<T>(p: Promise<T>): boolean {
+  function isSettled<T>(_p: Promise<T>): boolean {
     // there's no standard way; we just let race above drop settled items
     // keeping this function to clarify intent
     return false;

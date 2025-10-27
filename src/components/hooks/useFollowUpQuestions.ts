@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { FollowUpAnswers, GoalFollowUpData } from '../types/followUpQuestions';
+import { GoalFollowUpData } from '../types/followUpQuestions';
 import { FitnessGoal } from '../types/fitness';
 import { FOLLOW_UP_QUESTIONS, DIETARY_ALLERGIES_QUESTION } from '../label-data/followUpQuestions';
 
