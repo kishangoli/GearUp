@@ -219,7 +219,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
                   key={goal.id}
                   ref={(el) => observeElement(el, id)}
                   className={`scroll-reveal shimmer-on-scroll ${visibleElements.has(id) ? 'visible' : ''}`}
-                  style={{ aspectRatio: '0.95' }}
+                  style={{ height: '200px' }}
                 >
                   <Button
                     onClick={() => handleGoalToggle(goal.id)}
@@ -231,8 +231,8 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
                       <CheckmarkIcon isSelected={selected} />
                     </div>
                     <div className="text-5xl mb-3">{goal.icon}</div>
-                    <div className="text-lg font-semibold mb-2">{goal.label}</div>
-                    <div className="text-s opacity-80 text-center leading-tight px-1">{goal.description}</div>
+                    <div className="text-lg font-semibold mb-1">{goal.label}</div>
+                    <div className="text-sm opacity-80 text-center leading-tight px-2 break-words whitespace-normal line-clamp-2">{goal.description}</div>
                   </Button>
                 </div>
               );

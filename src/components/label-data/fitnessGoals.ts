@@ -22,7 +22,7 @@ export const FITNESS_GOALS: GoalConfig[] = [
   {
     id: 'running',
     label: 'Sports',
-    description: 'Athletic performance and training',
+    description: 'Athletic performance/training',
     icon: '⚽'
   }
 ];
