@@ -11,6 +11,7 @@
   ],
   "handle": "gearup-lsyy",
   "scopes": [
-    "product_list:read"
+    "product_list:read",
+    "product_list:write"
   ]
 }
