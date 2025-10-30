@@ -1,6 +1,11 @@
 import {Image, Button} from '@shopify/shop-minis-react'
 import React from 'react';
 
+import gearupfinal from '../../assets/gearupfinal.gif';
+import running from '../../assets/output.gif';
+
+
+
 interface OpenerPageProps {
   onGetStarted: () => void;
 }
@@ -37,7 +42,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       <div className="min-h-screen relative overflow-hidden flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40]">
       
       <Image
-        src="/public/output.gif"
+        src={running}
         alt="Running background"
         className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
       />
@@ -46,7 +51,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       
       <div className="flex-1 flex items-center justify-center -mt-40 relative z-30">
         <Image 
-          src="/public/gearupfinal.gif"
+          src={gearupfinal}
           alt="Gear Up Logo" 
           className="h-90 w-auto" 
         />

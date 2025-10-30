@@ -5,11 +5,14 @@ import { FITNESS_GOALS } from '../label-data/fitnessGoals';
 import { FitnessGoal, ExperienceLevel } from '../types/fitness';
 import { useUserAnswers } from '../context/UserAnswersContext';
 import { motion, AnimatePresence } from "motion/react";
+import gearupshortfinal from '../../assets/gearupshortfinal.png';
+
 
 interface MainPageProps {
   onBack: () => void;
   onProceed: (selections: any) => void;
 }
+
 
 export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -195,10 +198,10 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         </div>
 
         {/* Header */}
-        <div className="px-6 pt-20 pb-6">
+        <div className="px-6 pt-15 pb-6">
           <div className="text-center">
             <Image 
-              src="/public/gearupshortfinal.png"
+              src={gearupshortfinal}
               alt="Gear Up Logo" 
               className={`h-26 w-auto mx-auto mb-2 ${isLoaded ? 'slide-in-up' : ''}`}
             />
@@ -209,7 +212,7 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         </div>
 
   {/* Goals Grid - Reduced gap and taller cards */}
-  <div className="flex-1 px-4 pb-24 mt-5">
+  <div className="flex-1 px-4 pb-24 mt-2">
           <div className="grid grid-cols-2 gap-3">
             {FITNESS_GOALS.map((goal) => {
               const id = `goal-${goal.id}`;
