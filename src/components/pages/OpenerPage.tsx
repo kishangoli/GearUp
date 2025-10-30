@@ -37,7 +37,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       <div className="min-h-screen relative overflow-hidden flex flex-col justify-between items-center px-6 py-12 bg-[#242331] text-[#122D40]">
       
       <Image
-        src="/output.gif"
+        src="/public/output.gif"
         alt="Running background"
         className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
       />
@@ -46,7 +46,7 @@ export const OpenerPage: React.FC<OpenerPageProps> = ({ onGetStarted }) => {
       
       <div className="flex-1 flex items-center justify-center -mt-40 relative z-30">
         <Image 
-          src="/gearupfinal.gif"
+          src="/public/gearupfinal.gif"
           alt="Gear Up Logo" 
           className="h-90 w-auto" 
         />

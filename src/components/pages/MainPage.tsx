@@ -195,12 +195,12 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
         </div>
 
         {/* Header */}
-        <div className="px-4 pt-20 pb-6">
+        <div className="px-6 pt-20 pb-6">
           <div className="text-center">
             <Image 
-              src="/gearupshortfinal.png"
+              src="/public/gearupshortfinal.png"
               alt="Gear Up Logo" 
-              className={`h-16 w-auto mx-auto mb-2 ${isLoaded ? 'slide-in-up' : ''}`}
+              className={`h-26 w-auto mx-auto mb-2 ${isLoaded ? 'slide-in-up' : ''}`}
             />
             <p className={`text-base text-gray-200 max-w-md mx-auto ${isLoaded ? 'slide-in-up' : ''}`}>
               Your personal fitness journey begins here.
@@ -208,8 +208,8 @@ export const MainPage: React.FC<MainPageProps> = ({ onBack, onProceed }) => {
           </div>
         </div>
 
-        {/* Goals Grid - Reduced gap and taller cards */}
-        <div className="flex-1 px-4 pb-24">
+  {/* Goals Grid - Reduced gap and taller cards */}
+  <div className="flex-1 px-4 pb-24 mt-5">
           <div className="grid grid-cols-2 gap-3">
             {FITNESS_GOALS.map((goal) => {
               const id = `goal-${goal.id}`;

@@ -550,8 +550,8 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
               <div 
                 className="bg-gray-400/20 backdrop-blur-sm rounded-xl border border-gray-400/30"
                 style={{ 
-                  width: 220, 
-                  height: 300,
+                  width: 240, 
+                  height: 330,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -576,7 +576,7 @@ export default function VisionBoardPage({ onBack }: VisionBoardPageProps) {
                 <SwipeStack
                   items={items.slice(0, 4)} // Show max 5 cards to reduce clutter
                   keyExtractor={keyOf}
-                  width={220}
+                  width={280}
                   gapY={12}
                   gapScale={0.05}
                   dismissOffset={120}
